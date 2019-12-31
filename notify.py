@@ -256,7 +256,7 @@ def template_test():
  - Build the Da Vinci Notifications Message
  - Submit the Message to the nominated endpoint using the $process-message operation
 '''.format(ref_server=ref_server_name)
-
+    cache.clear()
     return render_template(
         'template.html',
          my_string=my_string,
