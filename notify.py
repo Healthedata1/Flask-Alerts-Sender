@@ -83,7 +83,7 @@ ref_server =  {  # base_url for reference server - no trailing forward slash
     'WildFHIR': 'http://wildfhir4.aegis.net/fhir4-0-0',
     }
 ref_server_name = "FHIR R4"
-alerts_server = { # base_url for alerts server
+alerts_servers = { # base_url for alerts server
     "Alerts-RI": 'https://davinci-alerts-receiver.logicahealth.org/fhir',
     'Cigna': 'https://ttbfdsk0pc.execute-api.us-east-1.amazonaws.com/dev',
     'WildFHIR': "http://wildfhir4.aegis.net/fhir4-0-0",
@@ -375,8 +375,8 @@ def r_id(r_type, r_id):
             mh.meta.profile = profile_list['MessageHeader_discharge']
         # TODO add discharge subtypes and handle other statuses
 
-        mh.destination[0].name = list(alerts_server.keys())[0]
-        mh.destination[0].endpoint = list(alerts_server.values())[0]
+        mh.destination[0].name = list(alerts_servers.keys())[0]
+        mh.destination[0].endpoint = list(alerts_servers.values())[0]
         # TODO make a selection for the destination
 
         mh.sender.reference = 'Organization/sending_organization'  # hardcoded for now
@@ -442,11 +442,11 @@ def r_id(r_type, r_id):
                my_string=f"Getting Resources ready for Bundler...for encounter pr_id={encounter.id}",
                title=f"Bundle Prep", current_time=datetime.datetime.now(),
                resources=resources,
-               endpoints = alerts_server,
+               endpoints = alerts_servers,
                message_bundle = message_bundle, # returns as json string!
                )
-@app.route("/<path:target_url>/$process-message")
-def process_message(target_url):
+@app.route("/<string:alerts_server>/$process-message")
+def process_message(alerts_server):
         '''
         upload message to process-message endpoint
         return operation outcome
@@ -458,19 +458,19 @@ def process_message(target_url):
 
         data = cache.get("message_bundle")
         app.logger.info(f'data = {data}')
-        with post(f'{target_url}/$process-message', headers=headers, data=data) as r:
+        with post(f'{alerts_servers[alerts_server]}/$process-message', headers=headers, data=data) as r:
             try:
                 oo = r.json()
             except:
                 oo = {}
-            app.logger.info(f'url= {target_url}\n\
+            app.logger.info(f'url= {alerts_servers[alerts_server]}\n\
                             r.status_code ={r.status_code}\n\
                             r.reason={r.reason}\n\
                             r.headers=\n\
                             {r.headers}\n')
 
         return render_template('sub_template6.html',
-                           my_string=f"Send Message Bundle to {target_url}/$process-message with response = **{r.status_code}**",
+                           my_string=f"Send Message Bundle to {alerts_server}/$process-message with response = **{r.status_code}**",
                            title="$process-message Response",
                            current_time=datetime.datetime.now(),
                             headers = dict(r.headers),
