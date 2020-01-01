@@ -270,11 +270,15 @@ def home():
 
 @app.route("/about")
 def about():
-    my_string='''This is a simple Flask App FHIR Facade which:
+    my_string='''This is a simple python Flask App FHIR Facade which:
 
  - Fetches *Admit* and *Discharge* Encounters from the {ref_server} Reference Servers
  - Build the Da Vinci Notifications Message
  - Submit the Message to the nominated endpoint using the $process-message operation
+
+ The source code can be found on *github*: <https://github.com/Healthedata1/Flask-Alerts-Sender>
+
+ This application is deployed on [![pythonanywhere](https://www.pythonanywhere.com/static/anywhere/images/PA-logo.svg)](https://www.pythonanywhere.com/)
  '''.format(ref_server=ref_server_name)
     return render_template('sub_template1.html',
                            my_string=my_string,
