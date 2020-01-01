@@ -18,7 +18,7 @@ import fhirclient.r4models.fhirdate as FD
 import fhirclient.r4models.bundle as B
 from utils import write_val
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 app.secret_key = 'my secret key'
 cache = SimpleCache()
 

@@ -9,7 +9,7 @@ Click "Home" in the menu bar to start over
 
 <h4>Current date/time: {{ current_time | datetimefilter }}</h4>
 <br>
-<p>My string (in markdown!!): {{my_string | markdown | safe }}</p>
+<p>{{my_string | markdown | safe }}</p>
 
 <h4>Response Headers:</h4>
 <pre>
@@ -20,5 +20,5 @@ Click "Home" in the menu bar to start over
 <pre>
 {{ oo | tojson(indent=4) }}
 </pre>
-  <h3> This is the end of my child template</h3>
+
 {% endblock content %}

@@ -1,7 +1,7 @@
 {% extends "template.html" %}
 
 {% block content %}
-  <h3> This is the collection of resource to bundle as a Message see below for the bundle</h3>
+  <h3> This is the collection of resources to bundle as a Message see below for the bundle as a json string</h3>
 
   {% for k,v in endpoints.items() %}
 
@@ -13,7 +13,7 @@
 
   <h4>Current date/time: {{ current_time | datetimefilter }}</h4>
   <br>
-  <p>My string (in markdown!!): {{my_string | markdown | safe }}</p>
+  <p>{{my_string | markdown | safe }}</p>
 
 list of resources in Bundle:
 <ul>
@@ -28,5 +28,5 @@ list of resources in Bundle:
 <pre>
 {{ message_bundle }}
 </pre>
-  <h3> This is the end of my child template</h3>
+
 {% endblock content %}
