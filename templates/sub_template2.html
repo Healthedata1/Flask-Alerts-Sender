@@ -5,10 +5,11 @@
   <br>
   <h4>Current date/time: {{ current_time | datetimefilter }}</h4>
   <br>
-  
+
 <div>
   <a no-external="true" href="http://www.hl7.org/about/davinci/">
 <img alt="visit our website" class="img-responsive project-logo" src="{{url_for('static', filename='images/org_logo.png')}}">
+</a>
 </div>
 
   <p>{# My string (in markdown!!):#} {{my_string | markdown | safe }}</p>
