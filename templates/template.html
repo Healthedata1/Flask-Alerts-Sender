@@ -9,15 +9,17 @@
 {% endblock %}
 {% block content %}  <!-- foo -->
   <h3> Documentation and Instructions</h3>
-  <br>
-  <h4>Current date/time: {{ current_time | datetimefilter }}</h4>
-  <br>
   <p>{# My string (in markdown!!): #} {{my_string | markdown | safe}}</p>
+  <div>
+    <img alt="trigger event" class="img-responsive" src="{{url_for('static', filename='images/trigger.png')}}">
+  </div>
 
-{{"Loop through a fixed list of Encounter ids .. **Click on one to Fetch an Encounter Resource**"  | markdown | safe}}
+
+
+{{ "**Click on button below to Fetch an admit or discharge Encounter Resource**"  | markdown | safe}}
 
     {% for n in enc_list %}
-    <a class="btn btn-primary" role="button" href="Encounter/{{n}}">{{n}}</a>
+    <a class="btn btn-primary" role="button" href="Encounter/{{n}}">Encounter/{{n}}</a>
     <br /><br />
     {% endfor %}
 

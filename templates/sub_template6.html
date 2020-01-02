@@ -1,15 +1,19 @@
 {% extends "template.html" %}
 
 {% block content %}
-  <h3> This is the response to the <code>$process-message</code> Operation </h3>
+  <h3> Instructions and Documentation </h3>
 
-<p>
+<p> See below for the response from the $process-message endpoint server (Receiver/Intermediary).
 Click "Home" in the menu bar to start over
 </p>
 
-<h4>Current date/time: {{ current_time | datetimefilter }}</h4>
-<br>
-<p>{{my_string | markdown | safe }}</p>
+<div>
+    <img alt="trigger event" class="img-responsive" src="{{url_for('static', filename='images/response.png')}}">
+</div>
+<br/>
+
+{{my_string1 | markdown | safe }}
+{{my_string2 | markdown | safe }}
 
 <h4>Response Headers:</h4>
 <pre>

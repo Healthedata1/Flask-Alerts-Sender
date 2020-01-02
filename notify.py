@@ -252,9 +252,10 @@ app.jinja_env.filters['atterror_filter'] = atterror_filter
 def template_test():
     my_string='''This is a simple Flask App FHIR Facade which:
 
- - Fetches *Admit* and *Discharge* Encoounters from the {ref_server} Reference Server
- - Build the Da Vinci Notifications Message
- - Submit the Message to the nominated endpoint using the $process-message operation
+ 1. Fetches *Admit* and *Discharge* Encoounters from the {ref_server} Reference Server
+ 1. Builds the Da Vinci Notifications Message Bundle
+ 1. Submits the Message to the nominated endpoint using the $process-message operation
+ 1. Receives and displays the $process-message operation response from the server
 '''.format(ref_server=ref_server_name)
     return render_template(
         'template.html',
@@ -347,7 +348,7 @@ def r_id(r_type, r_id):
         app.logger.info(f'******see what is in cache = {cache.get("encounter")}***')
 
         return render_template('sub_template4.html',
-               my_string=f"Getting Resource...for pr_id={r_id}",
+               my_string="",
                title=f"{r_type}: {r_id}", current_time=datetime.datetime.now(),
                r_type = r_type,
                r_id=r_id,
@@ -473,9 +474,9 @@ def process_message(alerts_server):
                             {r.headers}\n')
 
         return render_template('sub_template6.html',
-                           my_string=f"Send Message Bundle to {alerts_server}/$process-message with response = **{r.status_code}**",
+                           my_string1=f"#### Response from {alerts_server} Server: **{r.status_code}**",
+                           my_string2=f"url = {alerts_servers[alerts_server]}/$process-message",
                            title="$process-message Response",
-                           current_time=datetime.datetime.now(),
                             headers = dict(r.headers),
                             oo = oo
                             )

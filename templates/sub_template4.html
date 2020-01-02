@@ -3,11 +3,16 @@
 {% block content %}
   <h3> Instructions and Documentation </h3>
 
+  <p>
+    See the details of the Encounter below. The Sender asssembles the Message Bundle as defined in the a Vinci Unsolicited Notifications Implementation Guide.
+  </p>
+
+  <div>
+    <img alt="trigger event" class="img-responsive" src="{{url_for('static', filename='images/bundle.png')}}">
+  </div>
+<br/>
   <a class="btn btn-primary btn-lg" role="button" href="../MessageBundle/{{ r_id }}">CLICK HERE for view of Assembled Da Vinci Notification Bundle</a>
 
-  <br>
-  <h4>Current date/time: {{ current_time | datetimefilter }}</h4>
-  <br>
 {{my_string | markdown | safe }}
   <h3>{{r_type}} {{r_id}} Resource:</h3>
 
