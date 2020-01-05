@@ -1,6 +1,7 @@
 
 '''
 simple flask app to fetch data build a bundle and send as $process-message operation
+use ps aux | grep Flask to find app and kill
 '''
 
 from flask import Flask, render_template, redirect, url_for, session, send_from_directory
