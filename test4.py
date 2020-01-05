@@ -24,6 +24,6 @@ print(s)
 
 print(f"this is my list .... {'.'.join([x for x in mylist])}")
 out_file = '.'
-p = Path(out_file)/ 'python' / 'scripts' / 'test.py'
+p = Path(out_file).joinpath( 'python' , 'scripts' ,'test.py')
 
 print(f'{p}')

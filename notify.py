@@ -3,7 +3,7 @@
 simple flask app to fetch data build a bundle and send as $process-message operation
 '''
 
-from flask import Flask, render_template, redirect, url_for, session
+from flask import Flask, render_template, redirect, url_for, session, send_from_directory
 from werkzeug.contrib.cache import SimpleCache
 import sys, datetime, uuid
 from json import load, dumps, loads
@@ -11,12 +11,13 @@ from requests import get, post, put
 from commonmark import commonmark
 import fhirtemplates # local templates
 from importlib import import_module
-#from pathlib import path
+from pathlib import Path
 from copy import deepcopy
 import fhirclient.r4models.meta as M
 import fhirclient.r4models.fhirdate as FD
 import fhirclient.r4models.bundle as B
 from utils import write_out, clear_dir
+
 
 app = Flask(__name__, static_url_path='/static')
 UPLOAD_FOLDER = '/test_output'
@@ -262,8 +263,8 @@ app.jinja_env.filters['atterror_filter'] = atterror_filter
 
 @app.route("/")
 def template_test():
+    clear_dir(out_path=app.root_path, f_name = cache.get('f_name')) #clear upload files if present in cache.
     cache.clear()  # clear all the cache
-    clear_dir(out_path=app.root_path)
     my_string='''This is a simple Flask App FHIR Facade which:
 
 For single "real-time" Notifications:
@@ -494,11 +495,13 @@ def r_id(r_type, r_ids):
             notification_bundle = bundler(pyfhir_messages,'transaction', validate_me)
             my_string=f'Getting Resources ready for Tansaction Bundle of Da Vinci Notification Message Bundle...\n'\
             f'for {",".join([r for r in resource_list if r.startswith("Encounter")])}'
-            endpoint = ''
+            endpoint = 'transaction'
 
         # writing to ig examples file and running the IG Build:
-        write_out(app.root_path, notification_bundle, id_safe_now)
-        app.logger.info(f'writing example notification bundle to {app.root_path}/test_output')
+        f_name = f'davinci_notification_bundle_{now.strftime("%Y%m%d%H%M%S.%f")}.json'
+        write_out(app.root_path, f_name, notification_bundle)
+        app.logger.info(f'writing example notification bundle to {app.root_path}/test_output/{f_name}')
+        cache.set('f_name', f_name, timeout=60*60) # to delete upload files when start over
 
         '''set cache to use during the session.
         assuming single user for now to keep it simple
@@ -513,7 +516,17 @@ def r_id(r_type, r_ids):
                endpoint_urls = alerts_servers,
                endpoint = endpoint,
                notification_bundle = notification_bundle,
+               f_name=f_name,
                )
+
+@app.route("/uploads")
+def download():
+    uploads = Path().joinpath(app.root_path, app.config['UPLOAD_FOLDER'])
+    try:
+        return send_from_directory(directory=uploads, filename='foo.json', as_attachment=True)
+    except Exception as e:
+        return str(e)
+
 @app.route("/<string:alerts_server>/$process-message")
 def process_message(alerts_server):
         '''
@@ -545,7 +558,7 @@ def process_message(alerts_server):
                             headers = dict(r.headers),
                             oo = oo
                             )
-@app.route("/<string:alerts_server>/")
+@app.route("/<string:alerts_server>/transaction")
 def transaction(alerts_server):
         '''
         upload message to transaction endpoint
@@ -576,11 +589,6 @@ def transaction(alerts_server):
                             headers = dict(r.headers),
                             oo = oo
                             )
-
-@app.route('/uploads/<path:filename>', methods=['GET', 'POST'])
-def download(filename):
-    uploads = path.join(current_app.root_path, app.config['UPLOAD_FOLDER'])
-    return send_from_directory(directory=uploads, filename=filename)
 
 if __name__ == '__main__':
     app.run(debug=True)
