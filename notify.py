@@ -21,8 +21,6 @@ from utils import write_out, clear_dir
 
 
 app = Flask(__name__, static_url_path='/static')
-UPLOAD_FOLDER = '/test_output'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = 'my secret key'
 cache = SimpleCache()
 
@@ -520,13 +518,10 @@ def r_id(r_type, r_ids):
                f_name=f_name,
                )
 
-@app.route("/uploads")
-def download():
-    uploads = Path().joinpath(app.root_path, app.config['UPLOAD_FOLDER'])
-    try:
-        return send_from_directory(directory=uploads, filename='foo.json', as_attachment=True)
-    except Exception as e:
-        return str(e)
+@app.route('/uploads/<path:filename>', methods=['GET', 'POST'])
+def download(filename):
+    directory= f'{app.root_path}/test_output'
+    return send_from_directory(directory= directory, filename=filename, as_attachment=True, mimetype='application/json')
 
 @app.route("/<string:alerts_server>/$process-message")
 def process_message(alerts_server):

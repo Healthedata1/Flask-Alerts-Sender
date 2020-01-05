@@ -1,12 +1,12 @@
 {
-    "id": "davinci-notifications-bundle-20200105080415.007891",
+    "id": "davinci-notifications-bundle-20200105093504.506559",
     "entry": [
         {
-            "fullUrl": "urn:uuid:f7128bd6-2f91-11ea-8345-a4d18ccf5172",
+            "fullUrl": "urn:uuid:a73a7670-2f9e-11ea-8b19-a4d18ccf5172",
             "resource": {
                 "author": {
                     "display": "Dr. Janeth814 Jakubowski832",
-                    "reference": "urn:uuid:f712b2c8-2f91-11ea-8345-a4d18ccf5172"
+                    "reference": "urn:uuid:a73a9222-2f9e-11ea-8b19-a4d18ccf5172"
                 },
                 "destination": [
                     {
@@ -22,16 +22,16 @@
                 "focus": [
                     {
                         "display": "Notification Admit Er(Unknown (qualifier value))",
-                        "reference": "urn:uuid:f71292fc-2f91-11ea-8345-a4d18ccf5172"
+                        "reference": "urn:uuid:a73a7daa-2f9e-11ea-8b19-a4d18ccf5172"
                     }
                 ],
                 "responsible": {
                     "display": "HOLY FAMILY HOSPITAL",
-                    "reference": "urn:uuid:f712bd0e-2f91-11ea-8345-a4d18ccf5172"
+                    "reference": "urn:uuid:a73a9682-2f9e-11ea-8b19-a4d18ccf5172"
                 },
                 "sender": {
                     "display": "Acme Message Sender",
-                    "reference": "urn:uuid:f712fbca-2f91-11ea-8345-a4d18ccf5172"
+                    "reference": "urn:uuid:a73ab504-2f9e-11ea-8b19-a4d18ccf5172"
                 },
                 "source": {
                     "contact": {
@@ -47,7 +47,7 @@
             }
         },
         {
-            "fullUrl": "urn:uuid:f71292fc-2f91-11ea-8345-a4d18ccf5172",
+            "fullUrl": "urn:uuid:a73a7daa-2f9e-11ea-8b19-a4d18ccf5172",
             "resource": {
                 "class": {
                     "code": "EMER",
@@ -76,7 +76,7 @@
                     {
                         "location": {
                             "display": "HOLY FAMILY HOSPITAL",
-                            "reference": "urn:uuid:f712a4d6-2f91-11ea-8345-a4d18ccf5172"
+                            "reference": "urn:uuid:a73a8d90-2f9e-11ea-8b19-a4d18ccf5172"
                         }
                     }
                 ],
@@ -84,7 +84,7 @@
                     {
                         "individual": {
                             "display": "Dr. Janeth814 Jakubowski832",
-                            "reference": "urn:uuid:f712b2c8-2f91-11ea-8345-a4d18ccf5172"
+                            "reference": "urn:uuid:a73a9222-2f9e-11ea-8b19-a4d18ccf5172"
                         }
                     }
                 ],
@@ -94,12 +94,12 @@
                 },
                 "serviceProvider": {
                     "display": "HOLY FAMILY HOSPITAL",
-                    "reference": "urn:uuid:f712bd0e-2f91-11ea-8345-a4d18ccf5172"
+                    "reference": "urn:uuid:a73a9682-2f9e-11ea-8b19-a4d18ccf5172"
                 },
                 "status": "in-progress",
                 "subject": {
                     "display": "Mr. Elden718 Halvorson124",
-                    "reference": "urn:uuid:f7129af4-2f91-11ea-8345-a4d18ccf5172"
+                    "reference": "urn:uuid:a73a87fa-2f9e-11ea-8b19-a4d18ccf5172"
                 },
                 "type": [
                     {
@@ -117,7 +117,7 @@
             }
         },
         {
-            "fullUrl": "urn:uuid:f7129af4-2f91-11ea-8345-a4d18ccf5172",
+            "fullUrl": "urn:uuid:a73a87fa-2f9e-11ea-8b19-a4d18ccf5172",
             "resource": {
                 "extension": [
                     {
@@ -303,7 +303,7 @@
             }
         },
         {
-            "fullUrl": "urn:uuid:f712a4d6-2f91-11ea-8345-a4d18ccf5172",
+            "fullUrl": "urn:uuid:a73a8d90-2f9e-11ea-8b19-a4d18ccf5172",
             "resource": {
                 "address": {
                     "city": "METHUEN",
@@ -316,7 +316,7 @@
                 },
                 "managingOrganization": {
                     "display": "HOLY FAMILY HOSPITAL",
-                    "reference": "urn:uuid:f712bd0e-2f91-11ea-8345-a4d18ccf5172"
+                    "reference": "urn:uuid:a73a9682-2f9e-11ea-8b19-a4d18ccf5172"
                 },
                 "name": "HOLY FAMILY HOSPITAL",
                 "position": {
@@ -334,7 +334,7 @@
             }
         },
         {
-            "fullUrl": "urn:uuid:f712b2c8-2f91-11ea-8345-a4d18ccf5172",
+            "fullUrl": "urn:uuid:a73a9222-2f9e-11ea-8b19-a4d18ccf5172",
             "resource": {
                 "active": true,
                 "address": [
@@ -383,7 +383,7 @@
             }
         },
         {
-            "fullUrl": "urn:uuid:f712bd0e-2f91-11ea-8345-a4d18ccf5172",
+            "fullUrl": "urn:uuid:a73a9682-2f9e-11ea-8b19-a4d18ccf5172",
             "resource": {
                 "active": true,
                 "address": [
@@ -426,7 +426,7 @@
             }
         },
         {
-            "fullUrl": "urn:uuid:f712c632-2f91-11ea-8345-a4d18ccf5172",
+            "fullUrl": "urn:uuid:a73a9ace-2f9e-11ea-8b19-a4d18ccf5172",
             "resource": {
                 "category": [
                     {
@@ -458,12 +458,12 @@
                     "text": "Examplitis"
                 },
                 "encounter": {
-                    "reference": "urn:uuid:f71292fc-2f91-11ea-8345-a4d18ccf5172"
+                    "reference": "urn:uuid:a73a7daa-2f9e-11ea-8b19-a4d18ccf5172"
                 },
                 "onsetDateTime": "2018-10-21T21:22:15-07:00",
                 "recordedDate": "2018-10-21T21:22:15-07:00",
                 "subject": {
-                    "reference": "urn:uuid:f7129af4-2f91-11ea-8345-a4d18ccf5172"
+                    "reference": "urn:uuid:a73a87fa-2f9e-11ea-8b19-a4d18ccf5172"
                 },
                 "verificationStatus": {
                     "coding": [
@@ -477,15 +477,15 @@
             }
         },
         {
-            "fullUrl": "urn:uuid:f712cefc-2f91-11ea-8345-a4d18ccf5172",
+            "fullUrl": "urn:uuid:a73aa744-2f9e-11ea-8b19-a4d18ccf5172",
             "resource": {
                 "beneficiary": {
-                    "reference": "urn:uuid:f7129af4-2f91-11ea-8345-a4d18ccf5172"
+                    "reference": "urn:uuid:a73a87fa-2f9e-11ea-8b19-a4d18ccf5172"
                 },
                 "payor": [
                     {
                         "display": "Blue Cross Blue Shield",
-                        "reference": "urn:uuid:f712d7b2-2f91-11ea-8345-a4d18ccf5172"
+                        "reference": "urn:uuid:a73aafdc-2f9e-11ea-8b19-a4d18ccf5172"
                     }
                 ],
                 "status": "active",
@@ -497,7 +497,7 @@
             }
         },
         {
-            "fullUrl": "urn:uuid:f712d7b2-2f91-11ea-8345-a4d18ccf5172",
+            "fullUrl": "urn:uuid:a73aafdc-2f9e-11ea-8b19-a4d18ccf5172",
             "resource": {
                 "active": true,
                 "address": [
@@ -528,7 +528,7 @@
             }
         },
         {
-            "fullUrl": "urn:uuid:f712fbca-2f91-11ea-8345-a4d18ccf5172",
+            "fullUrl": "urn:uuid:a73ab504-2f9e-11ea-8b19-a4d18ccf5172",
             "resource": {
                 "active": true,
                 "address": [
@@ -559,7 +559,7 @@
             }
         }
     ],
-    "timestamp": "2020-01-05T08:04:15.007891Z",
+    "timestamp": "2020-01-05T09:35:04.506559Z",
     "type": "message",
     "resourceType": "Bundle"
 }
