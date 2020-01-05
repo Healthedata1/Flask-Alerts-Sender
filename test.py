@@ -2,6 +2,7 @@ from importlib import import_module
 from pprint import pprint
 from functools import reduce
 
+resources = []
 
 def pyfhir(r_dict, Type=None):
     '''
@@ -9,7 +10,11 @@ def pyfhir(r_dict, Type=None):
     output is fhirclient class instance
     '''
     type = Type if Type else r_dict['resourceType']
-    MyClass = getattr(import_module(f"fhirclient.r4models.{type.lower()}"),type)
+    MyClass = getattr(import_module(
+                f"fhirclient.r4models.{type.lower()}"
+                )
+                ,type
+                )
     # Instantiate the class (pass arguments to the constructor, if needed)
     instance = MyClass(r_dict, strict=False)
     return(instance)
@@ -64,9 +69,19 @@ def safegetattr(obj):
 instance = pyfhir(r_dict)
 instance.status = "completed"
 instance.class_fhir = pyfhir({"code":"amb"}, "Coding")
-print(instance.resource_type)
 pprint(instance.as_json())
+
+
 
 
 print(f'access attribute if exists using gettattr: getattr(instance,"status", None)= {getattr(instance,"status", None)}')
 safegetattr("instance.location[0].location.reference")
+resources.append(instance)
+
+from json import dumps, loads
+
+r_json = dumps(r_dict)
+r_json_list = [r_json]
+r_new_dict_list = [loads(r_json) for r_json in r_json_list]
+
+print([pyfhir(r) for r in r_new_dict_list])

@@ -11,46 +11,63 @@
     <img alt="trigger event" class="img-responsive" src="{{url_for('static', filename='images/bundle.png')}}">
   </div>
 <br/>
-  <a class="btn btn-primary btn-lg" role="button" href="../MessageBundle/{{ r_id }}">CLICK HERE for view of Assembled Da Vinci Notification Bundle</a>
+  <a class="btn btn-primary btn-lg" role="button" href="../MessageBundle/{{ r_id }}">CLICK HERE to Assemble the Da Vinci Notification Bundle</a>
+  <br/>
+  <br/>
+<hr/>
+{% for i in r_id.split(",") %}
+{% if r_id.split(",") | length > 1%}
+  <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample{{i}}" aria-expanded="false" aria-controls="collapseExample{{i}}">
+    Click Here to See the Encounter Resource {{i}} Details
+  </button>
+  <br/>
+  <br/>
+  <div class="collapse" id="collapseExample{{i}}">
 
-{{my_string | markdown | safe }}
-  <h3>{{r_type}} {{r_id}} Resource:</h3>
+{% endif %}
 
-<h4>resource rendered narrative</h4>
+        <h3>{{r_type}} {{i}} Resource:</h3>
 
-{{ r_pyfhir | atterror_filter('text','div') | safe }}
+      <h4>Resource Rendered Narrative</h4>
+
+      {{ r_pyfhir[loop.index0] | atterror_filter('text','div') | safe }}
 
 
-<h4>My Jinja2 rendered narrative</h4>
-<ul>
-<li>
-<strong>ID</strong>: {{ r_pyfhir.id }}
-</li>
-<li>
-<strong>Status</strong>: {{ r_pyfhir.status }}
-</li>
-<li>
-<strong>Identifier</strong>: {{ r_pyfhir | atterror_filter("identifier", "value") | safe }}
-</li>
-<li>
-<strong>Organization1</strong>: {{ r_pyfhir | atterror_filter('serviceProvider','reference') | safe }}
-</li>
-<li>
-<strong>Location</strong>: {{ r_pyfhir | atterror_filter('location','location','reference') | safe }}
-</li>
-<li>
-<strong>Subject</strong>: {{ r_pyfhir | atterror_filter('subject','reference') | safe }}
-</li>
-<li>
-<strong>Practitioner</strong>: {{ r_pyfhir | atterror_filter('participant','individual','reference') | safe }}
-</li>
-</ul>
+      <h4>My Jinja2 Rendered Narrative</h4>
+      <ul>
+      <li>
+      <strong>ID</strong>: {{ r_pyfhir[loop.index0].id }}
+      </li>
+      <li>
+      <strong>Status</strong>: {{ r_pyfhir[loop.index0].status }}
+      </li>
+      <li>
+      <strong>Identifier</strong>: {{ r_pyfhir[loop.index0] | atterror_filter("identifier", "value") | safe }}
+      </li>
+      <li>
+      <strong>Organization1</strong>: {{ r_pyfhir[loop.index0] | atterror_filter('serviceProvider','reference') | safe }}
+      </li>
+      <li>
+      <strong>Location</strong>: {{ r_pyfhir[loop.index0] | atterror_filter('location','location','reference') | safe }}
+      </li>
+      <li>
+      <strong>Subject</strong>: {{ r_pyfhir[loop.index0] | atterror_filter('subject','reference') | safe }}
+      </li>
+      <li>
+      <strong>Practitioner</strong>: {{ r_pyfhir[loop.index0] | atterror_filter('participant','individual','reference') | safe }}
+      </li>
+      </ul>
 
-<h4>raw json</h4>
+      <h4>JSON Format</h4>
 
-<pre class="json">
-{{ r_pyfhir.as_json() | tojson(indent=4) }}
-</pre>
-<br>
+      <pre class="json">
+      {{ r_pyfhir[loop.index0].as_json() | tojson(indent=4) }}
+      </pre>
+
+  {% if r_id.split(",") | length > 1%}
+      </div>
+  {% endif %}
+  {% endfor %}
+
 
 {% endblock content %}

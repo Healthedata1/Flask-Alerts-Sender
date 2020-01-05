@@ -3,36 +3,35 @@
 {% block content %}
   <h3> Instructions and Documentation </h3>
 
-  <p> See below for the collection of resources bundled together to create the FHIR Message. After the Sender asssembles the Message Bundle it sends it to the Reciever/Intermediary using the $process-message operation which is defined the FHIR specification.</p>
+  <p> See below for the collection of resources bundled together to create the
+    {% if endpoint == '$process-message'%}Da Vinci Notification Message Bundle{% else %}FHIR transaction Bundle with entries of Da Vinci Notification Message Bundles{% endif %}. After the Sender asssembles the FHIR {% if endpoint == '$process-message'%}Message Bundle{% else %} transaction Bundle{% endif %} it sends it to the Reciever/Intermediary using {% if endpoint == '$process-message'%}the $process-message operation{% else %}the <code>transaction</code> interaction{% endif %} as defined the FHIR RESTful API.</p>
 
 <div>
     <img alt="trigger event" class="img-responsive" src="{{url_for('static', filename='images/process-message.png')}}">
 </div>
 <br/>
-  {% for k,v in endpoints.items() %}
+  {% for k,v in endpoint_urls.items() %}
 
-  <a class="btn btn-primary btn-lg" role="button" href="../{{k}}/$process-message">CLICK HERE to send message bundle the {{k}} ({{v}}) $process-message endpoint</a>
+  <a class="btn btn-primary btn-lg" role="button" href="../{{k}}/{{endpoint}}">CLICK HERE to send message bundle the {{k}} ({{v}}) {{endpoint}} endpoint</a>
   <br/>
   <br/>
 
 {% endfor %}
 
-  <h4>Current date/time: {{ current_time | datetimefilter }}</h4>
-  <br>
-  <p>{{my_string | markdown | safe }}</p>
+<p>{{ my_string | markdown | safe }}</p>
 
 list of resources in Bundle:
 <ul>
-{% for i in resources %}
+{% for i in resource_list %}
 <li>
-{{i.resource_type}}/{{i.id}}
+{{i}}
 </li>
 {% endfor %}
 </ul>
 
-<h4>Message Bundle Resource:</h4>
+<h4>Notification Bundle Resource:</h4>
 <pre>
-{{ message_bundle }}
+{{ notification_bundle }}
 </pre>
 
 {% endblock content %}

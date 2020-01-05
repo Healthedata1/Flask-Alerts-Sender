@@ -9,14 +9,31 @@
 {% endblock %}
 {% block content %}  <!-- foo -->
   <h3> Documentation and Instructions</h3>
-  <p>{# My string (in markdown!!): #} {{my_string | markdown | safe}}</p>
+  <p>{# My string (in markdown!!): #} {{'This is a simple Flask App FHIR Facade which:
+
+For single "real-time" Notifications:
+
+  1. Fetches *Admit* and *Discharge* Encoounters from the **{ref_server}** Reference Server
+  1. Builds the Da Vinci Notifications Message Bundle
+  1. Submits the Message to the nominated endpoint using the `$process-message` operation
+  1. Receives and displays the $process-message operation response from the server
+
+For a Batch Transaction of multiple Notification:
+
+  1. Fetches all the relevant *Admit* and *Discharge* Encounters from the **{ref_server}** Reference Server
+  1. Builds a transaction Bundle with:
+     1. the Da Vinci Notifications Message Bundle as entries
+     1. `POST` for the request method
+     1. `/$process-message` for the request url
+  1. Submits the transaction Bundle to the nominated endpoint using the `POST` operation
+  1. Receives and displays the "transaction-response" response from the server.'.format(ref_server=ref_server) | markdown | safe}}</p>
   <div>
     <img alt="trigger event" class="img-responsive" src="{{url_for('static', filename='images/trigger.png')}}">
   </div>
 
+<hr/>
 
-
-{{ "**Click on button below to Fetch an admit or discharge Encounter Resource**"  | markdown | safe}}
+{{ '**For *Real-Time Notifications* Click on button below to Fetch an admit or discharge Encounter Resource**'  | markdown | safe}}
 
     {% for n in enc_list %}
     <a class="btn btn-primary" role="button" href="Encounter/{{n}}">Encounter/{{n}}</a>
@@ -24,9 +41,12 @@
     {% endfor %}
 
   <br>
-  <!--
-  <p>Same list with a filter: {{ enc_list|join(', ') }}</p>
-  -->
 
+  <hr/>
+{{ '**For *Batch Notifications* Click on button below to Fetch all the admit and discharge Encounter Resource**'  | markdown | safe}}
+
+    <a class="btn btn-primary" role="button" href="Encounter/{{ enc_list[:-1]|join(',') }}">Batch Encounters/{{ enc_list[:-1]|join(',Encounter/') }}</a>
+
+  <hr/>
 
 {% endblock %}
