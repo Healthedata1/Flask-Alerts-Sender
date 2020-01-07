@@ -28,6 +28,7 @@ cache = SimpleCache()
 validate_me = False # to save for validation in IG
 
 profile_list = dict(
+
 Bundle = "http://hl7.org/fhir/us/davinci-alerts/StructureDefinition/notifications-bundle",
 MessageHeader = "http://hl7.org/fhir/us/davinci-alerts/StructureDefinition/notifications-messageheader",
 MessageHeader_admit = "http://hl7.org/fhir/us/davinci-alerts/StructureDefinition/admit-notification-messageheader",
@@ -89,6 +90,8 @@ alerts_servers = { # base_url for alerts server
     "Alerts-RI": 'https://davinci-alerts-receiver.logicahealth.org/fhir',
     'Cigna': 'https://ttbfdsk0pc.execute-api.us-east-1.amazonaws.com/dev',
     'WildFHIR': "http://wildfhir4.aegis.net/fhir4-0-0",
+    'One Medical': "https://dev.fhir.onemedical.io/r4",
+    'Edifex': 'https://davinci.collablynk.com/payer/alerts',
     }
 
 # some timestamp formats
@@ -197,7 +200,8 @@ def bundler(resources, type, validate_me=False):
         if not validate_me: #remove meta profiles
              if r.meta: #remove meta
                 r.meta = None
-        r.id = None #remove old_ids
+        if r.resource_type is not "MessageHeader":
+            r.id = None #remove old_ids
         r.text = None #remove textB
         entry.resource = r
         if type in ['transaction', 'batch']:
@@ -531,9 +535,10 @@ def process_message(alerts_server):
         '''
         headers = {
         'Accept':'application/fhir+json',
-        'Content-Type':'application/fhir+json'
+        'Content-Type':'application/fhir+json',
+        'Authorization':'Bearer heqfnVgiMGCJuef',  #if alerts_server == "One Medical" else None,
         }
-
+        app.logger.info(f'*******alerts_server = {alerts_server}******')
         data = cache.get('notification_bundle')
         app.logger.info(f'data = {data}')
         with post(f'{alerts_servers[alerts_server]}/$process-message', headers=headers, data=data) as r:
@@ -562,10 +567,12 @@ def transaction(alerts_server):
         '''
         headers = {
         'Accept':'application/fhir+json',
-        'Content-Type':'application/fhir+json'
+        'Content-Type':'application/fhir+json',
+        'Authorization':'Bearer heqfnVgiMGCJuef',  #if alerts_server == "One Medical" else None,
         }
 
         data = cache.get('notification_bundle')
+        app.logger.info(f'*******alert_server = {alert_server}******')
         app.logger.info(f'data = {data}')
         with post(f'{alerts_servers[alerts_server]}/', headers=headers, data=data) as r:
             try:

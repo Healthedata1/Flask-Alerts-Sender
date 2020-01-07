@@ -4,16 +4,17 @@ from functools import reduce
 
 resources = []
 
-def pyfhir(r_dict, Type=None):
+def pyfhir(r_dict, fhir_resource=None, fhir_attribute=None):
     '''
     input is resource instance as r_dict
     output is fhirclient class instance
     '''
-    type = Type if Type else r_dict['resourceType']
+    fhir_resource = fhir_resource if fhir_resource else r_dict['resourceType']
+    fhir_attribute = fhir_attribute if fhir_attribute else fhir_resource
     MyClass = getattr(import_module(
-                f"fhirclient.r4models.{type.lower()}"
+                f"fhirclient.r4models.{fhir_resource.lower()}"
                 )
-                ,type
+                ,fhir_attribute
                 )
     # Instantiate the class (pass arguments to the constructor, if needed)
     instance = MyClass(r_dict, strict=False)
@@ -85,3 +86,30 @@ r_json_list = [r_json]
 r_new_dict_list = [loads(r_json) for r_json in r_json_list]
 
 print([pyfhir(r) for r in r_new_dict_list])
+
+b = pyfhir({},'Bundle')
+
+
+
+print(b)
+
+pprint(dir(b))
+pprint(b.elementProperties())
+print(b.id)
+print(b.timestamp)
+
+MyClass = getattr(import_module(
+                "fhirclient.r4models.bundle"
+                )
+                ,"BundleEntry"
+                )
+
+be = MyClass({})
+be.fullUrl = 'foo'
+print(be.as_json())
+
+be = pyfhir({'fullUrl': 'foo'},'Bundle', 'BundleEntry')
+
+print(be)
+print(be.as_json())
+pprint(be.elementProperties())
