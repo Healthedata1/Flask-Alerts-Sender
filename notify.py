@@ -91,7 +91,7 @@ alerts_servers = { # base_url for alerts server
     'Cigna': 'https://ttbfdsk0pc.execute-api.us-east-1.amazonaws.com/dev',
     'WildFHIR': "http://wildfhir4.aegis.net/fhir4-0-0",
     'One Medical': "https://dev.fhir.onemedical.io/r4",
-    'Edifex': 'https://davinci.collablynk.com/payer/alerts',
+    'Edifecs': 'https://davinci.collablynk.com/payer/alerts',
     }
 
 # some timestamp formats
