@@ -11,7 +11,8 @@
 </div>
 <br/>
   {% for k,v in endpoint_urls.items() %}
-
+  {% set image = 'images/' + k + '.png' %}
+  <img alt="{{k}}" class="img-responsive" width="150" src="{{url_for('static', filename=image)}}">
   <a class="btn btn-primary btn-lg" role="button" href="../{{k}}/{{endpoint}}">CLICK HERE to send message bundle the {{k}} ({{v}}) {{endpoint}} endpoint</a>
   <br/>
   <br/>
