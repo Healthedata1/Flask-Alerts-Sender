@@ -1,0 +1,502 @@
+{
+    "id": "davinci-notifications-bundle-20200111012944.948272",
+    "entry": [
+        {
+            "fullUrl": "urn:uuid:d9181f68-3411-11ea-baa9-a4d18ccf5172",
+            "resource": {
+                "id": "d9181f68-3411-11ea-baa9-a4d18ccf5172",
+                "author": {
+                    "display": "Dr. Raina861 Willms744",
+                    "reference": "urn:uuid:d9183656-3411-11ea-baa9-a4d18ccf5172"
+                },
+                "destination": [
+                    {
+                        "endpoint": "https://davinci-alerts-receiver.logicahealth.org/fhir",
+                        "name": "Alerts-RI"
+                    }
+                ],
+                "eventCoding": {
+                    "code": "notification-admit",
+                    "display": "Notification Admit",
+                    "system": "http://hl7.org/fhir/us/davinci-alerts/CodeSystem/notification-event"
+                },
+                "focus": [
+                    {
+                        "display": "Inpatient Encounter",
+                        "reference": "urn:uuid:d918288c-3411-11ea-baa9-a4d18ccf5172"
+                    }
+                ],
+                "responsible": {
+                    "display": "SOUTH SHORE HOSPITAL",
+                    "reference": "urn:uuid:d9183a84-3411-11ea-baa9-a4d18ccf5172"
+                },
+                "sender": {
+                    "display": "Acme Message Sender",
+                    "reference": "urn:uuid:d91846dc-3411-11ea-baa9-a4d18ccf5172"
+                },
+                "source": {
+                    "contact": {
+                        "system": "phone",
+                        "value": "+1 (555) 123 4567"
+                    },
+                    "endpoint": "https://example.org/Endpoints/P456",
+                    "name": "Acme Central Patient Registry",
+                    "software": "FooBar Patient Manager",
+                    "version": "3.1.45.AABB"
+                },
+                "resourceType": "MessageHeader"
+            }
+        },
+        {
+            "fullUrl": "urn:uuid:d918288c-3411-11ea-baa9-a4d18ccf5172",
+            "resource": {
+                "class": {
+                    "code": "EMER",
+                    "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode"
+                },
+                "identifier": [
+                    {
+                        "system": "https://github.com/synthetichealth/synthea",
+                        "use": "official",
+                        "value": "02ba9ec6-0712-4715-8ba4-5485fc571403"
+                    }
+                ],
+                "location": [
+                    {
+                        "location": {
+                            "display": "SOUTH SHORE HOSPITAL",
+                            "reference": "urn:uuid:d9183214-3411-11ea-baa9-a4d18ccf5172"
+                        }
+                    }
+                ],
+                "participant": [
+                    {
+                        "individual": {
+                            "display": "Dr. Raina861 Willms744",
+                            "reference": "urn:uuid:d9183656-3411-11ea-baa9-a4d18ccf5172"
+                        }
+                    }
+                ],
+                "period": {
+                    "end": "2019-07-06T19:47:44-07:00",
+                    "start": "2019-07-06T18:47:44-07:00"
+                },
+                "serviceProvider": {
+                    "display": "SOUTH SHORE HOSPITAL",
+                    "reference": "urn:uuid:d9183a84-3411-11ea-baa9-a4d18ccf5172"
+                },
+                "status": "finished",
+                "subject": {
+                    "display": "Ms. Jama227 Corwin846",
+                    "reference": "urn:uuid:d9182da0-3411-11ea-baa9-a4d18ccf5172"
+                },
+                "type": [
+                    {
+                        "coding": [
+                            {
+                                "code": "1234",
+                                "display": "Examplotomy Encounter",
+                                "system": "http://snomed.info/sct"
+                            }
+                        ],
+                        "text": "Examplotomy Encounter"
+                    }
+                ],
+                "resourceType": "Encounter"
+            }
+        },
+        {
+            "fullUrl": "urn:uuid:d9182da0-3411-11ea-baa9-a4d18ccf5172",
+            "resource": {
+                "extension": [
+                    {
+                        "extension": [
+                            {
+                                "url": "ombCategory",
+                                "valueCoding": {
+                                    "code": "2106-3",
+                                    "display": "White",
+                                    "system": "urn:oid:2.16.840.1.113883.6.238"
+                                }
+                            },
+                            {
+                                "url": "text",
+                                "valueString": "White"
+                            }
+                        ],
+                        "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-race"
+                    },
+                    {
+                        "extension": [
+                            {
+                                "url": "ombCategory",
+                                "valueCoding": {
+                                    "code": "2186-5",
+                                    "display": "Not Hispanic or Latino",
+                                    "system": "urn:oid:2.16.840.1.113883.6.238"
+                                }
+                            },
+                            {
+                                "url": "text",
+                                "valueString": "Not Hispanic or Latino"
+                            }
+                        ],
+                        "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity"
+                    },
+                    {
+                        "url": "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName",
+                        "valueString": "Becky854 Crist667"
+                    },
+                    {
+                        "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex",
+                        "valueCode": "F"
+                    },
+                    {
+                        "url": "http://hl7.org/fhir/StructureDefinition/patient-birthPlace",
+                        "valueAddress": {
+                            "city": "Boston",
+                            "country": "US",
+                            "state": "Massachusetts"
+                        }
+                    },
+                    {
+                        "url": "http://synthetichealth.github.io/synthea/disability-adjusted-life-years",
+                        "valueDecimal": 0.0
+                    },
+                    {
+                        "url": "http://synthetichealth.github.io/synthea/quality-adjusted-life-years",
+                        "valueDecimal": 17.0
+                    }
+                ],
+                "address": [
+                    {
+                        "extension": [
+                            {
+                                "extension": [
+                                    {
+                                        "url": "latitude",
+                                        "valueDecimal": 42.23059709875085
+                                    },
+                                    {
+                                        "url": "longitude",
+                                        "valueDecimal": -71.04894935227846
+                                    }
+                                ],
+                                "url": "http://hl7.org/fhir/StructureDefinition/geolocation"
+                            }
+                        ],
+                        "city": "Braintree",
+                        "country": "US",
+                        "line": [
+                            "801 Wolf Quay Suite 61"
+                        ],
+                        "state": "MA"
+                    }
+                ],
+                "birthDate": "2001-06-30",
+                "communication": [
+                    {
+                        "language": {
+                            "coding": [
+                                {
+                                    "code": "en-US",
+                                    "display": "English",
+                                    "system": "urn:ietf:bcp:47"
+                                }
+                            ],
+                            "text": "English"
+                        }
+                    }
+                ],
+                "gender": "female",
+                "identifier": [
+                    {
+                        "system": "https://github.com/synthetichealth/synthea",
+                        "value": "aad0894e-47f4-4ffc-8fab-8fe5487110d2"
+                    },
+                    {
+                        "system": "http://hospital.smarthealthit.org",
+                        "type": {
+                            "coding": [
+                                {
+                                    "code": "MR",
+                                    "display": "Medical Record Number",
+                                    "system": "http://terminology.hl7.org/CodeSystem/v2-0203"
+                                }
+                            ],
+                            "text": "Medical Record Number"
+                        },
+                        "value": "aad0894e-47f4-4ffc-8fab-8fe5487110d2"
+                    },
+                    {
+                        "system": "http://hl7.org/fhir/sid/us-ssn",
+                        "type": {
+                            "coding": [
+                                {
+                                    "code": "SS",
+                                    "display": "Social Security Number",
+                                    "system": "http://terminology.hl7.org/CodeSystem/v2-0203"
+                                }
+                            ],
+                            "text": "Social Security Number"
+                        },
+                        "value": "999-21-5963"
+                    },
+                    {
+                        "system": "urn:oid:2.16.840.1.113883.4.3.25",
+                        "type": {
+                            "coding": [
+                                {
+                                    "code": "DL",
+                                    "display": "Driver's License",
+                                    "system": "http://terminology.hl7.org/CodeSystem/v2-0203"
+                                }
+                            ],
+                            "text": "Driver's License"
+                        },
+                        "value": "S99984181"
+                    }
+                ],
+                "maritalStatus": {
+                    "coding": [
+                        {
+                            "code": "S",
+                            "display": "Never Married",
+                            "system": "http://terminology.hl7.org/CodeSystem/v3-MaritalStatus"
+                        }
+                    ],
+                    "text": "Never Married"
+                },
+                "multipleBirthBoolean": false,
+                "name": [
+                    {
+                        "family": "Corwin846",
+                        "given": [
+                            "Jama227"
+                        ],
+                        "prefix": [
+                            "Ms."
+                        ],
+                        "use": "official"
+                    }
+                ],
+                "telecom": [
+                    {
+                        "system": "phone",
+                        "use": "home",
+                        "value": "555-442-3071"
+                    }
+                ],
+                "resourceType": "Patient"
+            }
+        },
+        {
+            "fullUrl": "urn:uuid:d9183214-3411-11ea-baa9-a4d18ccf5172",
+            "resource": {
+                "address": {
+                    "city": "SOUTH WEYMOUTH",
+                    "country": "US",
+                    "line": [
+                        "55 FOGG ROAD"
+                    ],
+                    "postalCode": "02190",
+                    "state": "MA"
+                },
+                "managingOrganization": {
+                    "display": "SOUTH SHORE HOSPITAL",
+                    "reference": "urn:uuid:d9183a84-3411-11ea-baa9-a4d18ccf5172"
+                },
+                "name": "SOUTH SHORE HOSPITAL",
+                "position": {
+                    "latitude": 42.24158900000001,
+                    "longitude": -71.082651
+                },
+                "status": "active",
+                "telecom": [
+                    {
+                        "system": "phone",
+                        "value": "7813408000"
+                    }
+                ],
+                "resourceType": "Location"
+            }
+        },
+        {
+            "fullUrl": "urn:uuid:d9183656-3411-11ea-baa9-a4d18ccf5172",
+            "resource": {
+                "active": true,
+                "address": [
+                    {
+                        "city": "SOUTH WEYMOUTH",
+                        "country": "US",
+                        "line": [
+                            "55 FOGG ROAD"
+                        ],
+                        "postalCode": "02190",
+                        "state": "MA"
+                    }
+                ],
+                "gender": "female",
+                "identifier": [
+                    {
+                        "system": "http://hl7.org/fhir/sid/us-npi",
+                        "value": "410"
+                    }
+                ],
+                "name": [
+                    {
+                        "family": "Willms744",
+                        "given": [
+                            "Raina861"
+                        ],
+                        "prefix": [
+                            "Dr."
+                        ]
+                    }
+                ],
+                "telecom": [
+                    {
+                        "extension": [
+                            {
+                                "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-direct",
+                                "valueBoolean": true
+                            }
+                        ],
+                        "system": "email",
+                        "use": "work",
+                        "value": "Raina861.Willms744@example.com"
+                    }
+                ],
+                "resourceType": "Practitioner"
+            }
+        },
+        {
+            "fullUrl": "urn:uuid:d9183a84-3411-11ea-baa9-a4d18ccf5172",
+            "resource": {
+                "active": true,
+                "address": [
+                    {
+                        "city": "SOUTH WEYMOUTH",
+                        "country": "US",
+                        "line": [
+                            "55 FOGG ROAD"
+                        ],
+                        "postalCode": "02190",
+                        "state": "MA"
+                    }
+                ],
+                "identifier": [
+                    {
+                        "system": "https://github.com/synthetichealth/synthea",
+                        "value": "db0acede-4abe-3c01-8d03-5c68a190d8c7"
+                    }
+                ],
+                "name": "SOUTH SHORE HOSPITAL",
+                "telecom": [
+                    {
+                        "system": "phone",
+                        "value": "7813408000"
+                    }
+                ],
+                "type": [
+                    {
+                        "coding": [
+                            {
+                                "code": "prov",
+                                "display": "Healthcare Provider",
+                                "system": "http://terminology.hl7.org/CodeSystem/organization-type"
+                            }
+                        ],
+                        "text": "Healthcare Provider"
+                    }
+                ],
+                "resourceType": "Organization"
+            }
+        },
+        {
+            "fullUrl": "urn:uuid:d9183ea8-3411-11ea-baa9-a4d18ccf5172",
+            "resource": {
+                "beneficiary": {
+                    "reference": "urn:uuid:d9182da0-3411-11ea-baa9-a4d18ccf5172"
+                },
+                "payor": [
+                    {
+                        "display": "Anthem",
+                        "reference": "urn:uuid:d91842cc-3411-11ea-baa9-a4d18ccf5172"
+                    }
+                ],
+                "status": "active",
+                "subscriberId": "12345",
+                "type": {
+                    "text": "Anthem"
+                },
+                "resourceType": "Coverage"
+            }
+        },
+        {
+            "fullUrl": "urn:uuid:d91842cc-3411-11ea-baa9-a4d18ccf5172",
+            "resource": {
+                "active": true,
+                "address": [
+                    {
+                        "city": "Indianapolis",
+                        "line": [
+                            "220 Virginia Ave"
+                        ],
+                        "postalCode": "46204",
+                        "state": "IN"
+                    }
+                ],
+                "identifier": [
+                    {
+                        "system": "http://hl7.org/fhir/sid/us-npi",
+                        "value": "0000010009"
+                    }
+                ],
+                "name": "Anthem",
+                "telecom": [
+                    {
+                        "system": "phone",
+                        "use": "work",
+                        "value": "1-800-331-1476"
+                    }
+                ],
+                "resourceType": "Organization"
+            }
+        },
+        {
+            "fullUrl": "urn:uuid:d91846dc-3411-11ea-baa9-a4d18ccf5172",
+            "resource": {
+                "active": true,
+                "address": [
+                    {
+                        "city": "Chicago",
+                        "line": [
+                            "1 Main"
+                        ],
+                        "postalCode": "60007",
+                        "state": "IL"
+                    }
+                ],
+                "identifier": [
+                    {
+                        "system": "http://hl7.org/fhir/sid/us-npi",
+                        "value": "0000010005"
+                    }
+                ],
+                "name": "Acme Message Sender",
+                "telecom": [
+                    {
+                        "system": "phone",
+                        "use": "work",
+                        "value": "1-800-555-5555"
+                    }
+                ],
+                "resourceType": "Organization"
+            }
+        }
+    ],
+    "timestamp": "2020-01-11T01:29:44.948272Z",
+    "type": "message",
+    "resourceType": "Bundle"
+}

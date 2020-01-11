@@ -51,7 +51,8 @@ admit_types = dict(
         )
 # discharge if encounter completed
 
-enc_list = [i for i in range(905,911)] +['foo']# test R4 Server encounters
+#enc_list = [i for i in range(905,911)] +['foo']# test R4 Server encounters
+enc_list = [588258,588265,588267,588274,588276,588283]+['foo']# test HAPI R4 Server encounters
 
 get_ids = [# [{name:name, Type:Type, args=(args), is_req=bool}]
     dict(
@@ -85,7 +86,8 @@ ref_server =  {  # base_url for reference server - no trailing forward slash
     'HAPI UHN R4': 'http://hapi.fhir.org/baseR4',
     'WildFHIR': 'http://wildfhir4.aegis.net/fhir4-0-0',
     }
-ref_server_name = "FHIR R4"
+#ref_server_name = "FHIR R4"
+ref_server_name = "HAPI UHN R4"
 alerts_servers = { # base_url for alerts server
     "Alerts-RI": 'https://davinci-alerts-receiver.logicahealth.org/fhir',
     'Cigna': 'https://ttbfdsk0pc.execute-api.us-east-1.amazonaws.com/dev',
@@ -198,12 +200,13 @@ def bundler(resources, type, validate_me=False):
         old_ref = f'{r.resource_type}/{r.id}'
         ref_map[old_ref] = new_urn
         entry.fullUrl = new_urn
+        r.id = new_urn[9:]
         if not validate_me: #remove meta profiles
              if r.meta: #remove meta
                 r.meta = None
         if r.resource_type is not "MessageHeader":
             r.id = None #remove old_ids
-        r.text = None #remove textB
+        r.text = None #remove text
         entry.resource = r
         if type in ['transaction', 'batch']:
             entry.request = B.BundleEntryRequest(dict
