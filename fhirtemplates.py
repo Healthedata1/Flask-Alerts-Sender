@@ -52,7 +52,7 @@ messageheader={
 
 sender= {
     "resourceType": "Organization",
-    "id": "sending_organization",
+    "id": "sending-organization",
     "identifier": [
         {
             "system": "http://hl7.org/fhir/sid/us-npi",

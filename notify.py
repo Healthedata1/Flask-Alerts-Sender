@@ -200,12 +200,12 @@ def bundler(resources, type, validate_me=False):
         old_ref = f'{r.resource_type}/{r.id}'
         ref_map[old_ref] = new_urn
         entry.fullUrl = new_urn
-        r.id = new_urn[9:]
+        # r.id = new_urn[9:]
         if not validate_me: #remove meta profiles
              if r.meta: #remove meta
                 r.meta = None
-        if r.resource_type is not "MessageHeader":
-            r.id = None #remove old_ids
+        #if r.resource_type is not "MessageHeader":
+            #r.id = None #remove old_ids
         r.text = None #remove text
         entry.resource = r
         if type in ['transaction', 'batch']:
