@@ -93,7 +93,7 @@ alerts_servers = { # base_url for alerts server
     'Cigna': 'https://ttbfdsk0pc.execute-api.us-east-1.amazonaws.com/dev',
     'WildFHIR': "http://wildfhir4.aegis.net/fhir4-0-0",
     'One Medical': "https://dev.fhir.onemedical.io/r4",
-    'Guidewell/Edifecs': 'https://davinci.collablynk.com/payer/alerts',
+    'Guidewell-Edifecs': 'https://davinci.collablynk.com/payer/alerts',
     'IBC': 'https://tbd'
     }
 
