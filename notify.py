@@ -42,6 +42,7 @@ Location = "http://hl7.org/fhir/us/core/StructureDefinition/us-core-location",
 Organization = "http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization",
 )
 
+'''
 # admit if encounter in progess and type if class =
 admit_types = dict(
             EMER = 'notification-admit-er',
@@ -50,9 +51,24 @@ admit_types = dict(
             AMB = 'notification-admit-ambulatory',
         )
 # discharge if encounter completed
+'''
 
 #enc_list = [i for i in range(905,911)] +['foo']# test R4 Server encounters
-enc_list = [588258,588265,588267,588274,588276,588283]+['foo']# test HAPI R4 Server encounters
+#enc_list = [588258,588265,588267,588274,588276,588283]+['foo']# test HAPI R4 Server encounters
+enc_list = [ #for 54 = admit, 55 = transfer =, 56 = discharge
+ '5fe62cd5-bfcf-4d3b-a1e9-80d6f75d6f82/_history/54',
+ '5fe62cd5-bfcf-4d3b-a1e9-80d6f75d6f82/_history/55',
+ '5fe62cd5-bfcf-4d3b-a1e9-80d6f75d6f82/_history/56',
+ '542f9e32-4309-4277-81ce-12419f0d1294/_history/54',
+ '542f9e32-4309-4277-81ce-12419f0d1294/_history/55',
+ '542f9e32-4309-4277-81ce-12419f0d1294/_history/56',
+ '02ba9ec6-0712-4715-8ba4-5485fc571403/_history/54',
+ '02ba9ec6-0712-4715-8ba4-5485fc571403/_history/55',
+ '02ba9ec6-0712-4715-8ba4-5485fc571403/_history/56',
+ 'foo/_history/54',
+ 'foo/_history/55',
+ 'foo/_history/56']
+
 
 get_ids = [# [{name:name, Type:Type, args=(args), is_req=bool}]
     dict(
@@ -421,19 +437,22 @@ def r_id(r_type, r_ids):
             now = datetime.datetime.utcnow()
             mh.id = f'messageheader-{now.strftime("%Y%m%d%H%M%S.%f")}'
             mh.focus[0].reference = f"Encounter/{encounter.id}"
-            if encounter.status == "in-progress":
-                try:
-                    mh.eventCoding.code =  admit_types[encounter.class_fhir.code]
-                    mh.eventCoding.display = mh.eventCoding.code.replace('-', ' ').title()
-                    mh.focus[0].display = f'{mh.eventCoding.display}({encounter.type[0].text})'
-                except KeyError:
-                    pass
-            elif encounter.status == "completed":
+
+            if encounter.status == "in-progress" and encounter.class.code == "EMER":
+                mh.eventCoding.code = 'notification-discharge'
+                mh.eventCoding.display = 'Notification Discharge'
+            elif encounter.status == "in-progress" and encounter.class.code == "IMP":
+                mh.eventCoding.code =  'notification-transfer'
+                mh.eventCoding.display = 'Notification Transfer'
+                mh.meta.profile = profile_list['MessageHeader_transfer']
+            elif encounter.status == "finished":
                 mh.eventCoding.code =  'notification-discharge'
                 mh.eventCoding.display = 'Notification Discharge'
                 mh.meta.profile = profile_list['MessageHeader_discharge']
-            # TODO add discharge subtypes and handle other statuses
 
+
+            # TODO add discharge subtypes and handle other statuses
+            mh.focus[0].display = f'{mh.eventCoding.display}({encounter.type[0].text})'
             mh.destination[0].name = list(alerts_servers.keys())[0]
             mh.destination[0].endpoint = list(alerts_servers.values())[0]
             # TODO make a selection for the destination

@@ -33,19 +33,25 @@ For a Batch Transaction of multiple Notification:
 
 <hr/>
 
-{{ '**For *Real-Time Notifications* Click on button below to Fetch an admit or discharge Encounter Resource**'  | markdown | safe}}
+{{ '**For *Real-Time Notifications* Click on button below to fetch an admit, transfer, or discharge Encounter resource**'  | markdown | safe}}
 
     {% for n in enc_list %}
-    <a class="btn btn-primary" role="button" href="Encounter/{{n}}">Encounter/{{n}}</a>
-    <br /><br />
+      {% if loop.index % 3 = 1 %}
+          <strong>{{n[0]}}: </strong><a class="btn btn-primary" role="button" href="Encounter/{{n}}}">Admit</a>
+      {% elif loop.index % 3 = 2 %}
+          </strong><a class="btn btn-primary" role="button" href="Encounter/{{n}}">Transfer</a>
+      {% else %}
+          </strong><a class="btn btn-primary" role="button" href="Encounter/{{n}}">Discharge</a>
+          <br /><br />
+      {% endif %}
     {% endfor %}
 
   <br>
 
   <hr/>
-{{ '**For *Batch Notifications* Click on button below to Fetch all the admit and discharge Encounter Resource**'  | markdown | safe}}
+{{ '**For *Batch Notifications* Click on button below to fetch all the admit, transfer, and discharge Encounter resources**'  | markdown | safe}}
 
-    <a class="btn btn-primary" role="button" href="Encounter/{{ enc_list[:-1]|join(',') }}">Batch Encounters/{{ enc_list[:-1]|join(',Encounter/') }}</a>
+    <a class="btn btn-primary" role="button" href="Encounter/{{ enc_list[:-1]|join(',') }}">Batch Encounters</a>
 
   <hr/>
 
