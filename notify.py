@@ -161,8 +161,8 @@ def get_r_id(Type,*args):
         app.logger.info(f'****** my_id = {my_id.split("/")[-1]}***')
         return my_id.split('/')[-1]
 
-# *********************** Fetch Resource ********************
-def fetch(Type,**kwargs):
+# *********************** Search Resource ********************
+def search(Type,**kwargs):
     '''
     fetch resource by search parameters e.g. _id
     return resource as fhirclient model
@@ -183,6 +183,30 @@ def fetch(Type,**kwargs):
             return r.json()["entry"][0]["resource"] # just the first for now
         else:
             return None
+
+# *********************** Fetch Resource ********************
+def fetch(Type,_id,ver=None):
+    '''
+    fetch resource by READ or VREAD method e.g. [base]/[Type]/[id]/{[_history]}/{[version]}
+    return resource as fhirclient model
+    '''
+    headers = {
+    'Accept':'application/fhir+json',
+    'Content-Type':'application/fhir+json'
+    }
+
+    r_url = (f'{ref_server[ref_server_name]}/{Type.capitalize()}/{_id}/_history/{ver}'
+            if ver else f'{ref_server[ref_server_name]}/{Type.capitalize()}/{_id}')
+    app.logger.info(f'****** r_url = {r_url}***')
+    with get(r_url, headers=headers) as r:
+        # return r.status_code
+        # view  output
+        # return (r.json()["text"]["div"])
+        if r.status_code <300:
+            return r.json() # just the first for now
+        else:
+            return None
+
 
 def pyfhir(r_dict, Type=None):
     '''
@@ -343,22 +367,24 @@ def contact():
                            title="Contact Us", current_time=datetime.datetime.now(),
                             )
 
-@app.route("/not_found/<type>/")
-@app.route("/not_found/<type>/<r_id>")
-def resource_not_found(type, r_id=None):
+@app.route("/not_found/<type>/", defaults={'r_id': None,'hx': None,'ver': None })
+@app.route("/not_valid/<type>/<r_id>", defaults={'hx': None,'ver': None })
+@app.route("/not_valid/<type>/<r_id>/<hx>/<ver>")
+def resource_not_found(type, hx, ver, r_id):
     my_string='''
->Woops, that resource `{type}/{r_id}` doesn't exist! (0 search results)
+>Woops, that resource `{type}/{r_id}/{hx}/{ver}` doesn't exist! (0 search results)
 
 -  Click on the home button in the nav bar and try a different id
-'''.format(type= type,r_id=r_id)
+'''.format(type= type,r_id=r_id, hx=hx,ver=ver)
     return render_template('sub_template1.html',
                            my_string=my_string,
                            title="Resource not found error",
                            current_time=datetime.datetime.now(),
                            )
 
-@app.route("/not_valid/<type>/<r_id>")
-def resource_not_valid(type, r_id=''):
+@app.route("/not_valid/<type>/<r_id>", defaults={'ver': None })
+@app.route("/not_valid/<type>/<r_id>/_history/<ver>")
+def resource_not_valid(type, ver, r_id=None):
     my_string='''
 >Woops, that resource `{type}/{r_id.split("#")[0]}` is invalid. The element {r_id.split("#")[1]} doesn't exist!
 
@@ -370,9 +396,9 @@ def resource_not_valid(type, r_id=''):
                            current_time=datetime.datetime.now(),
                            )
 
-
-@app.route("/<string:r_type>/<string:r_ids>")  # get the encounter and fetch the others and bundle em together!
-def r_id(r_type, r_ids):
+@app.route("/<string:r_type>/<string:r_ids>", defaults={'hx': None,'ver': None })
+@app.route("/<string:r_type>/<string:r_ids>/<string:hx>/<string:ver>")  # get the encounter and fetch the others and bundle em together!
+def r_id(r_type, r_ids, hx, ver):
     '''
     General approach
     fetch encounter ids - 1 for single bundle, multiple for batching using a transaction bundle
@@ -384,7 +410,7 @@ def r_id(r_type, r_ids):
     if r_type == "Encounter":
         encounters = []
         for r_id in r_ids.split(','):
-            resource = fetch(r_type, _id=r_id) # fetch encounter resource by id as dict
+            resource = fetch(r_type, _id=r_id, ver=ver ) # fetch encounter resource by id as dict
             if resource:
                 resource = pyfhir(r_dict=resource) # convert encounter to pyfhir instance
                 add_profile(resource) # add profile if not already there
@@ -438,10 +464,10 @@ def r_id(r_type, r_ids):
             mh.id = f'messageheader-{now.strftime("%Y%m%d%H%M%S.%f")}'
             mh.focus[0].reference = f"Encounter/{encounter.id}"
 
-            if encounter.status == "in-progress" and encounter.class.code == "EMER":
-                mh.eventCoding.code = 'notification-discharge'
-                mh.eventCoding.display = 'Notification Discharge'
-            elif encounter.status == "in-progress" and encounter.class.code == "IMP":
+            if encounter.status == "in-progress" and encounter.class_fhir.code == "EMER":
+                mh.eventCoding.code = 'notification-admit'
+                mh.eventCoding.display = 'Notification Admit'
+            elif encounter.status == "in-progress" and encounter.class_fhir.code == "IMP":
                 mh.eventCoding.code =  'notification-transfer'
                 mh.eventCoding.display = 'Notification Transfer'
                 mh.meta.profile = profile_list['MessageHeader_transfer']
@@ -473,17 +499,17 @@ def r_id(r_type, r_ids):
                 args = i['args']
                 is_req = i['is_req']
                 my_id = get_r_id(encounter,*args)
-                resource = fetch(Type, _id=my_id)
+                resource = fetch(Type, _id=my_id, ver=ver)
                 append_resource(resource, resources, Type=Type, id=my_id, is_req = is_req)
 
 
 
-            resource = fetch('Condition',
+            resource = search('Condition',
                              patient=get_r_id(encounter,'subject','reference'), encounter=encounter.id,
                              ) # fetch condition
             append_resource(resource, resources, Type='Condition')
 
-            resource = fetch('Coverage',
+            resource = search('Coverage',
                              patient=get_r_id(encounter,'subject','reference'),
                               ) # fetch coverage
             coverage = pyfhir(r_dict=resource)

@@ -11,7 +11,7 @@
     <img alt="trigger event" class="img-responsive" src="{{url_for('static', filename='images/bundle.png')}}">
   </div>
 <br/>
-  <a class="btn btn-primary btn-lg" role="button" href="../MessageBundle/{{ r_id }}">CLICK HERE to Assemble the Da Vinci Notification Bundle</a>
+  <a class="btn btn-primary btn-lg" role="button" href="{{url_for('home')}}/{{ r_id }}">CLICK HERE to Assemble the Da Vinci Notification Bundle</a>
   <br/>
   <br/>
 <hr/>
@@ -39,8 +39,22 @@
       <strong>ID</strong>: {{ r_pyfhir[loop.index0].id }}
       </li>
       <li>
+      <strong>Version</strong>: {{ r_pyfhir[loop.index0].meta.versionId }}
+      </li>
+      <li>
       <strong>Status</strong>: {{ r_pyfhir[loop.index0].status }}
       </li>
+      <li>
+      <strong>Type</strong>: {{ r_pyfhir[loop.index0].type[0].text }}
+      </li>
+      {% if r_pyfhir[loop.index0].hospitalization %}
+      <li>
+      <strong>Hospitalization Admission Source</strong>: {{ r_pyfhir[loop.index0].hospitalization.admitSource.text }}
+      </li>
+      <li>
+      <strong>Hospitalization Discharge Disposition</strong>: {{ r_pyfhir[loop.index0].hospitalization.dischargeDisposition.text }}
+      </li>
+      {% endif %}
       <li>
       <strong>Identifier</strong>: {{ r_pyfhir[loop.index0] | atterror_filter("identifier", "value") | safe }}
       </li>

@@ -36,12 +36,13 @@ For a Batch Transaction of multiple Notification:
 {{ '**For *Real-Time Notifications* Click on button below to fetch an admit, transfer, or discharge Encounter resource**'  | markdown | safe}}
 
     {% for n in enc_list %}
-      {% if loop.index % 3 = 1 %}
-          <strong>{{n[0]}}: </strong><a class="btn btn-primary" role="button" href="Encounter/{{n}}}">Admit</a>
-      {% elif loop.index % 3 = 2 %}
+      {% if loop.index % 3 == 1 %}
+          <p><strong>Encounter id ={{n[:-12]}}: </strong></p><a class="btn btn-primary" role="button" href="Encounter/{{n}}">Admit</a>
+      {% elif loop.index % 3 == 2 %}
           </strong><a class="btn btn-primary" role="button" href="Encounter/{{n}}">Transfer</a>
       {% else %}
           </strong><a class="btn btn-primary" role="button" href="Encounter/{{n}}">Discharge</a>
+
           <br /><br />
       {% endif %}
     {% endfor %}
