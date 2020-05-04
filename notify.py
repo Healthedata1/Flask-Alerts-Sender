@@ -199,14 +199,16 @@ def fetch(Type,_id,ver=None):
     r_url = (f'{ref_server[ref_server_name]}/{Type.capitalize()}/{_id}/_history/{ver}'
             if ver else f'{ref_server[ref_server_name]}/{Type.capitalize()}/{_id}')
     app.logger.info(f'****** r_url = {r_url}***')
-    with get(r_url, headers=headers) as r:
-        # return r.status_code
-        # view  output
-        # return (r.json()["text"]["div"])
-        if r.status_code <300:
-            return r.json() # just the first for now
-        else:
-            return None
+    for attempt in range(5): #retry request up to ten times
+        sleep(1)  # wait a bit between retries
+        with get(r_url, headers=headers) as r:
+            # return r.status_code
+            # view  output
+            # return (r.json()["text"]["div"])
+            if r.status_code <300:
+                return r.json() # just the first for now
+    else:
+        return None
 
 
 # *********************** POST Resource ********************
