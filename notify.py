@@ -32,6 +32,7 @@ profile_list = dict(
 Bundle = "http://hl7.org/fhir/us/davinci-alerts/StructureDefinition/notifications-bundle",
 MessageHeader = "http://hl7.org/fhir/us/davinci-alerts/StructureDefinition/notifications-messageheader",
 MessageHeader_admit = "http://hl7.org/fhir/us/davinci-alerts/StructureDefinition/admit-notification-messageheader",
+MessageHeader_transfer = "http://hl7.org/fhir/us/davinci-alerts/StructureDefinition/transfer-notification-messageheader",
 MessageHeader_discharge ="http://hl7.org/fhir/us/davinci-alerts/StructureDefinition/dsicharge-notification-messageheader",
 Condition = "http://hl7.org/fhir/us/davinci-alerts/StructureDefinition/admit-discharge-notification-condition",
 Coverage = "http://hl7.org/fhir/us/davinci-alerts/StructureDefinition/admit-discharge-notification-coverage",
