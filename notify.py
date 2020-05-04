@@ -18,7 +18,7 @@ import fhirclient.r4models.meta as M
 import fhirclient.r4models.fhirdate as FD
 import fhirclient.r4models.bundle as B
 from utils import write_out, clear_dir
-
+from time import sleep
 
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = 'my secret key'
@@ -101,14 +101,14 @@ get_ids = [# [{name:name, Type:Type, args=(args), is_req=bool}]
 ref_server =  {  # base_url for reference server - no trailing forward slash
     'FHIR R4': 'http://test.fhir.org/r4',
     'HAPI UHN R4': 'http://hapi.fhir.org/baseR4',
-    'WildFHIR': 'http://wildfhir4.aegis.net/fhir4-0-0',
+    'WildFHIR': 'http://wildfhir4.aegis.net/fhir4-0-1',
     }
 #ref_server_name = "FHIR R4"
 ref_server_name = "HAPI UHN R4"
 alerts_servers = { # base_url for alerts server
     "Alerts-RI": 'https://davinci-alerts-receiver.logicahealth.org/fhir',
     'Cigna': 'https://ttbfdsk0pc.execute-api.us-east-1.amazonaws.com/dev',
-    'WildFHIR': "http://wildfhir4.aegis.net/fhir4-0-0",
+    'WildFHIR': "http://wildfhir4.aegis.net/fhir4-0-1",
     'One Medical': "https://dev.fhir.onemedical.io/r4",
     'Guidewell-Edifecs': 'https://davinci.collablynk.com/payer/alerts',
     'IBC': 'https://tbd'
@@ -207,6 +207,17 @@ def fetch(Type,_id,ver=None):
             return r.json() # just the first for now
         else:
             return None
+
+
+# *********************** POST Resource ********************
+def post_bundle(alerts_server,headers,data):
+
+  for attempt in range(5): #retry request up to ten times
+    sleep(1)  # wait a bit between retries
+    with post(f'{alerts_server}/$process-message', headers=headers, data=data) as r:
+        if r.status_code < 300:
+          return(r)
+  return(r)
 
 
 def pyfhir(r_dict, Type=None):
@@ -591,16 +602,17 @@ def process_message(alerts_server):
         app.logger.info(f'*******alerts_server = {alerts_server}******')
         data = cache.get('notification_bundle')
         app.logger.info(f'data = {data}')
-        with post(f'{alerts_servers[alerts_server]}/$process-message', headers=headers, data=data) as r:
-            try:
-                oo = r.json()
-            except:
-                oo = {}
-            app.logger.info(f'url= {alerts_servers[alerts_server]}\n\
-                            r.status_code ={r.status_code}\n\
-                            r.reason={r.reason}\n\
-                            r.headers=\n\
-                            {r.headers}\n')
+        #with post(f'{alerts_servers[alerts_server]}/$process-message', headers=headers, data=data) as r:
+        r = post_bundle(alerts_server=f'{alerts_servers[alerts_server]}/$process-message', headers=headers, data=data)
+        try:
+            oo = r.json()
+        except:
+            oo = {}
+        app.logger.info(f'url= {alerts_servers[alerts_server]}\n\
+                        r.status_code ={r.status_code}\n\
+                        r.reason={r.reason}\n\
+                        r.headers=\n\
+                        {r.headers}\n')
 
         return render_template('sub_template6.html',
                            my_string1=f"#### Response from {alerts_server} Server: **{r.status_code}**",
