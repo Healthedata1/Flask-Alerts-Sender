@@ -214,12 +214,12 @@ def fetch(Type,_id,ver=None):
 # *********************** POST Resource ********************
 def post_bundle(alerts_server,headers,data):
 
-  for attempt in range(5): #retry request up to ten times
-    sleep(1)  # wait a bit between retries
+    '''for attempt in range(5): #retry request up to ten times
+    sleep(1)  # wait a bit between retries'''
     with post(f'{alerts_server}/$process-message', headers=headers, data=data) as r:
         if r.status_code < 300:
           return(r)
-  return(r)
+    return(r)
 
 
 def pyfhir(r_dict, Type=None):
