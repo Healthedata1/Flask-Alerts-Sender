@@ -215,7 +215,8 @@ def fetch(Type,_id,ver=None):
 def post_bundle(alerts_server,headers,data):
     for attempt in range(5): #retry request up to ten times
         sleep(1)  # wait a bit between retries
-        with post(f'{alerts_server}/$process-message', headers=headers, data=data) as r:
+        app.logger.info(f'endpoint = {alerts_server}')
+        with post(f'{alerts_server}', headers=headers, data=data) as r:
             if r.status_code < 300:
               return(r)
     return(r)
@@ -657,11 +658,12 @@ def transaction(alerts_server):
         headers = {
         'Accept':'application/fhir+json',
         'Content-Type':'application/fhir+json',
-        'Authorization':'Bearer heqfnVgiMGCJuef',  #if alerts_server == "One Medical" else None,
+        #'Authorization':'Bearer heqfnVgiMGCJuef',  #if alerts_server == "One Medical" else None,
         }
 
         #data = cache.get('notification_bundle')
         app.logger.info(f'*******alert_server = {alert_server}******')
+        app.logger.info(f'*******alert_server $process-message url = {alerts_servers[alerts_server]}******')
         app.logger.info(f'data = {data}')
         with post(f'{alerts_servers[alerts_server]}/', headers=headers, data=data) as r:
             try:
