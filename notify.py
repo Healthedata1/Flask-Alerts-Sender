@@ -17,7 +17,7 @@ from copy import deepcopy
 import fhirclient.r4models.meta as M
 import fhirclient.r4models.fhirdate as FD
 import fhirclient.r4models.bundle as B
-from utils import write_out, clear_dir
+from utils import write_out, clear_dir, read_in
 from time import sleep
 
 app = Flask(__name__, static_url_path='/static')
@@ -107,11 +107,11 @@ ref_server =  {  # base_url for reference server - no trailing forward slash
 ref_server_name = "HAPI UHN R4"
 alerts_servers = { # base_url for alerts server
     "Alerts-RI": 'https://davinci-alerts-receiver.logicahealth.org/fhir',
-    'Cigna': 'https://ttbfdsk0pc.execute-api.us-east-1.amazonaws.com/dev',
+    #'Cigna': 'https://ttbfdsk0pc.execute-api.us-east-1.amazonaws.com/dev',
     'WildFHIR': "http://wildfhir4.aegis.net/fhir4-0-1",
-    'One Medical': "https://dev.fhir.onemedical.io/r4",
-    'Guidewell-Edifecs': 'https://davinci.collablynk.com/payer/alerts',
-    'IBC': 'https://tbd'
+    #'One Medical': "https://dev.fhir.onemedical.io/r4",
+    #'Guidewell-Edifecs': 'https://davinci.collablynk.com/payer/alerts',
+    #'IBC': 'https://tbd'
     }
 
 # some timestamp formats
@@ -323,8 +323,20 @@ app.jinja_env.filters['atterror_filter'] = atterror_filter
 
 @app.route("/")
 def template_test():
-    clear_dir(out_path=app.root_path, f_name = cache.get('f_name')) #clear upload files if present in cache.
-    cache.clear()  # clear all the cache
+    try:
+        for f_name in session['f_names']:
+            app.logger.info(f'******* clear out {app.root_path}/testoutput{f_name} from  = {session}')
+            clear_dir(out_path=app.root_path,f_name=f_name)
+    except:
+        pass
+    session['my_encounters']=[]
+    session['f_names']=[]
+
+    app.logger.info(f'******* sessions = {session}')
+    #cache.get('f_name') #clear upload files if present in cache.
+    #cache.clear()  # clear all the cache *TODO  switch over to db*
+
+
     my_string='''This is a simple Flask App FHIR Facade which:
 
 For single "real-time" Notifications:
@@ -422,7 +434,10 @@ def r_id(r_type, r_ids, hx, ver):
     app.logger.info(f'************r_ids={r_ids.split(",")}*************')
     if r_type == "Encounter":
         encounters = []
+        session['my_encounters']=[]
         for r_id in r_ids.split(','):
+            session['my_encounters'].append((r_id,ver))  # save encounter id and ver for this session
+            app.logger.info(f'****** line 449 see what is in session = {session}')
             resource = fetch(r_type, _id=r_id, ver=ver ) # fetch encounter resource by id as dict
             if resource:
                 resource = pyfhir(r_dict=resource) # convert encounter to pyfhir instance
@@ -436,8 +451,6 @@ def r_id(r_type, r_ids, hx, ver):
                     r_class = resource.class_fhir
                 except:
                     return redirect(url_for('resource_not_valid', type='Encounter', r_id=f'{r_id}#class'))
-
-                #session['encounter'] = resource.as_json()  # save encounter class as dict for this session
                 encounters.append(resource)
 
             else:
@@ -446,12 +459,12 @@ def r_id(r_type, r_ids, hx, ver):
             app.logger.info(f'******resource id={resource.id}***')
             app.logger.info(f'******estimated file size ={str(sys.getsizeof(resource.as_json())/1024)} "KB"***')
 
-        cache.set('encounters', encounters, timeout=60*15 )
+        #cache.set('encounters', encounters, timeout=60*15 )
         '''set cache to use during the session.
         assuming single user for now to keep it simple
         keep data for 15 minutes
         '''
-
+        #app.logger.info(f'****** line 454 see what is in cache = {cache.get("encounters")}***')
         return render_template('sub_template4.html',
                title=f"{r_type}: {r_ids}",
                r_type = r_type,
@@ -460,15 +473,19 @@ def r_id(r_type, r_ids, hx, ver):
                )
     else:
         ################### Assemble Bundle ################################
-        app.logger.info(f'******see what is in cache = {cache.get("encounters")}***')
+        app.logger.info(f'****** line 464 see what is in session = {session}***')
+        #app.logger.info(f'****** line 465 see what is in cache = {cache.get("encounters")}***')
 
-        encounters = cache.get("encounters") # get resources from cache
+        #encounters = cache.get("encounters") # get resources from cache
         resource_list=[]
         message_bundles =[]
         ################
         #for loop over encounters,  if encounter length > 1 then create transaction Bundles
         #################
-        for encounter in encounters:
+        for r_id, ver in session['my_encounters']:  #encounters:
+            encounter =fetch('Encounter', _id=r_id, ver=ver) #as dict
+            encounter = pyfhir(r_dict=encounter) # convert encounter to pyfhir instance
+            add_profile(encounter) # add profile if not already there
             resources = [encounter]
             #+++ create messageheader
             mh = getattr(fhirtemplates,'messageheader') # resources as dict
@@ -512,7 +529,8 @@ def r_id(r_type, r_ids, hx, ver):
                 args = i['args']
                 is_req = i['is_req']
                 my_id = get_r_id(encounter,*args)
-                resource = fetch(Type, _id=my_id, ver=ver)
+                app.logger.info(f'******my_id = {my_id}')
+                resource = fetch(Type, _id=my_id, ver=None)
                 append_resource(resource, resources, Type=Type, id=my_id, is_req = is_req)
 
 
@@ -566,14 +584,18 @@ def r_id(r_type, r_ids, hx, ver):
         f_name = f'davinci_notification_bundle_{now.strftime("%Y%m%d%H%M%S.%f")}.json'
         write_out(app.root_path, f_name, notification_bundle)
         app.logger.info(f'writing example notification bundle to {app.root_path}/test_output/{f_name}')
-        cache.set('f_name', f_name, timeout=60*60) # to delete upload files when start over
-
+        session['f_names'].append(f_name) # keep track of f_names for session to delete later
+        session.modified = True
+        app.logger.info(f'****** line 587 see what is in session = {session}***')
+        #cache.set('f_name', f_name, timeout=60*60) # to delete upload files when start over
         '''set cache to use during the session.
         assuming single user for now to keep it simple
         keep data for 15 minutes
         '''
-        cache.set('notification_bundle', notification_bundle, timeout=60*15 )
+        #app.logger.info(f'****** line 574 see what is in cache = {cache.get(f_name)}***')
 
+        #cache.set('notification_bundle', notification_bundle, timeout=60*15 )
+        #app.logger.info(f'****** line 574 see what is in cache = {cache.get("notification_bundle")}***')
         return render_template('sub_template5.html',
                my_string=my_string,
                title="Notification Bundle Prep",
@@ -601,7 +623,11 @@ def process_message(alerts_server):
         'Authorization':'Bearer heqfnVgiMGCJuef',  #if alerts_server == "One Medical" else None,
         }
         app.logger.info(f'*******alerts_server = {alerts_server}******')
-        data = cache.get('notification_bundle')
+        app.logger.info(f'****** line 624 see what is in session = {session}')
+        f_name=session['f_names'][-1]
+        #app.logger.info(f'line 627 ***** f_name  list = {session["f_names"]} f_name item =  {session["f_names"][-1]}')
+        data = read_in(in_path=app.root_path,f_name=f_name) # most recent saved bundle
+        #data = cache.get('notification_bundle')
         app.logger.info(f'data = {data}')
         #with post(f'{alerts_servers[alerts_server]}/$process-message', headers=headers, data=data) as r:
         r = post_bundle(alerts_server=f'{alerts_servers[alerts_server]}/$process-message', headers=headers, data=data)
@@ -634,7 +660,7 @@ def transaction(alerts_server):
         'Authorization':'Bearer heqfnVgiMGCJuef',  #if alerts_server == "One Medical" else None,
         }
 
-        data = cache.get('notification_bundle')
+        #data = cache.get('notification_bundle')
         app.logger.info(f'*******alert_server = {alert_server}******')
         app.logger.info(f'data = {data}')
         with post(f'{alerts_servers[alerts_server]}/', headers=headers, data=data) as r:

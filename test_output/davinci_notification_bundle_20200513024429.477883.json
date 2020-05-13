@@ -1,13 +1,13 @@
 {
-    "id": "davinci-notifications-bundle-20200505213308.175644",
+    "id": "davinci-notifications-bundle-20200513024436.179469",
     "entry": [
         {
-            "fullUrl": "urn:uuid:0313e868-8f18-11ea-9e9f-a4d18ccf5172",
+            "fullUrl": "urn:uuid:aee425e4-94c3-11ea-ad3d-8cae4cf416f7",
             "resource": {
-                "id": "messageheader-20200505213301.719488",
+                "id": "messageheader-20200513024429.477883",
                 "author": {
-                    "display": "Dr. Tommy814 Schmeler639",
-                    "reference": "urn:uuid:031401d6-8f18-11ea-9e9f-a4d18ccf5172"
+                    "display": "Dr. Raina861 Willms744",
+                    "reference": "urn:uuid:aee44a06-94c3-11ea-ad3d-8cae4cf416f7"
                 },
                 "destination": [
                     {
@@ -16,19 +16,19 @@
                     }
                 ],
                 "eventCoding": {
-                    "code": "notification-discharge",
-                    "display": "Notification Discharge",
+                    "code": "notification-admit",
+                    "display": "Notification Admit",
                     "system": "http://hl7.org/fhir/us/davinci-alerts/CodeSystem/notification-event"
                 },
                 "focus": [
                     {
-                        "display": "Notification Discharge(Examplotomy Encounter)",
-                        "reference": "urn:uuid:0313f02e-8f18-11ea-9e9f-a4d18ccf5172"
+                        "display": "Notification Admit(Unknown (qualifier value))",
+                        "reference": "urn:uuid:aee42e86-94c3-11ea-ad3d-8cae4cf416f7"
                     }
                 ],
                 "responsible": {
-                    "display": "BETH ISRAEL DEACONESS HOSPITAL - PLYMOUTH",
-                    "reference": "urn:uuid:03140708-8f18-11ea-9e9f-a4d18ccf5172"
+                    "display": "SOUTH SHORE HOSPITAL",
+                    "reference": "urn:uuid:aee45384-94c3-11ea-ad3d-8cae4cf416f7"
                 },
                 "sender": {
                     "display": "Acme Message Sender",
@@ -48,79 +48,67 @@
             }
         },
         {
-            "fullUrl": "urn:uuid:0313f02e-8f18-11ea-9e9f-a4d18ccf5172",
+            "fullUrl": "urn:uuid:aee42e86-94c3-11ea-ad3d-8cae4cf416f7",
             "resource": {
-                "id": "542f9e32-4309-4277-81ce-12419f0d1294",
+                "id": "02ba9ec6-0712-4715-8ba4-5485fc571403",
                 "class": {
-                    "code": "IMP",
+                    "code": "EMER",
                     "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode"
-                },
-                "hospitalization": {
-                    "dischargeDisposition": {
-                        "coding": [
-                            {
-                                "code": "1",
-                                "display": "Discharge to Home or Self Care (Routine Discharge)",
-                                "system": "http://www.nubc.org/patient-discharge"
-                            }
-                        ],
-                        "text": "Discharge to Home or Self Care (Routine Discharge)"
-                    }
                 },
                 "identifier": [
                     {
                         "system": "http://example.org",
-                        "value": "Garland107Conn18820180217T1507390800"
+                        "value": "Jama227Corwin84620190706T1847440700"
                     }
                 ],
                 "location": [
                     {
                         "location": {
-                            "display": "BETH ISRAEL DEACONESS HOSPITAL - PLYMOUTH",
-                            "reference": "urn:uuid:0313fc54-8f18-11ea-9e9f-a4d18ccf5172"
+                            "display": "SOUTH SHORE HOSPITAL",
+                            "reference": "urn:uuid:aee4406a-94c3-11ea-ad3d-8cae4cf416f7"
                         }
                     }
                 ],
                 "participant": [
                     {
                         "individual": {
-                            "display": "Dr. Tommy814 Schmeler639",
-                            "reference": "urn:uuid:031401d6-8f18-11ea-9e9f-a4d18ccf5172"
+                            "display": "Dr. Raina861 Willms744",
+                            "reference": "urn:uuid:aee44a06-94c3-11ea-ad3d-8cae4cf416f7"
                         }
                     }
                 ],
                 "period": {
-                    "end": "2018-02-19T16:07:39-08:00",
-                    "start": "2018-02-17T15:07:39-08:00"
+                    "end": "2019-07-06T19:47:44-07:00",
+                    "start": "2019-07-06T18:47:44-07:00"
                 },
                 "serviceProvider": {
-                    "display": "BETH ISRAEL DEACONESS HOSPITAL - PLYMOUTH",
-                    "reference": "urn:uuid:03140708-8f18-11ea-9e9f-a4d18ccf5172"
+                    "display": "SOUTH SHORE HOSPITAL",
+                    "reference": "urn:uuid:aee45384-94c3-11ea-ad3d-8cae4cf416f7"
                 },
-                "status": "finished",
+                "status": "in-progress",
                 "subject": {
-                    "display": "Mr. Garland107 Conn188",
-                    "reference": "urn:uuid:0313f6a0-8f18-11ea-9e9f-a4d18ccf5172"
+                    "display": "Ms. Jama227 Corwin846",
+                    "reference": "urn:uuid:aee4366a-94c3-11ea-ad3d-8cae4cf416f7"
                 },
                 "type": [
                     {
                         "coding": [
                             {
-                                "code": "1234",
-                                "display": "Examplotomy Encounter",
+                                "code": "261665006",
+                                "display": "Unknown (qualifier value)",
                                 "system": "http://snomed.info/sct"
                             }
                         ],
-                        "text": "Examplotomy Encounter"
+                        "text": "Unknown (qualifier value)"
                     }
                 ],
                 "resourceType": "Encounter"
             }
         },
         {
-            "fullUrl": "urn:uuid:0313f6a0-8f18-11ea-9e9f-a4d18ccf5172",
+            "fullUrl": "urn:uuid:aee4366a-94c3-11ea-ad3d-8cae4cf416f7",
             "resource": {
-                "id": "b1cf5f57-b061-4b7f-aa9d-6283a121694b",
+                "id": "aad0894e-47f4-4ffc-8fab-8fe5487110d2",
                 "extension": [
                     {
                         "extension": [
@@ -158,16 +146,16 @@
                     },
                     {
                         "url": "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName",
-                        "valueString": "Gina573 Terry864"
+                        "valueString": "Becky854 Crist667"
                     },
                     {
                         "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex",
-                        "valueCode": "M"
+                        "valueCode": "F"
                     },
                     {
                         "url": "http://hl7.org/fhir/StructureDefinition/patient-birthPlace",
                         "valueAddress": {
-                            "city": "Brookline",
+                            "city": "Boston",
                             "country": "US",
                             "state": "Massachusetts"
                         }
@@ -180,25 +168,25 @@
                                 "extension": [
                                     {
                                         "url": "latitude",
-                                        "valueDecimal": 41.97243792772779
+                                        "valueDecimal": 42.23059709875085
                                     },
                                     {
                                         "url": "longitude",
-                                        "valueDecimal": -70.05957503171508
+                                        "valueDecimal": -71.04894935227846
                                     }
                                 ],
                                 "url": "http://hl7.org/fhir/StructureDefinition/geolocation"
                             }
                         ],
-                        "city": "Truro",
+                        "city": "Braintree",
                         "country": "US",
                         "line": [
-                            "660 Bernier Bridge Suite 5"
+                            "801 Wolf Quay Suite 61"
                         ],
                         "state": "MA"
                     }
                 ],
-                "birthDate": "2000-02-12",
+                "birthDate": "2001-06-30",
                 "communication": [
                     {
                         "language": {
@@ -213,11 +201,11 @@
                         }
                     }
                 ],
-                "gender": "male",
+                "gender": "female",
                 "identifier": [
                     {
                         "system": "https://github.com/synthetichealth/synthea",
-                        "value": "b1cf5f57-b061-4b7f-aa9d-6283a121694b"
+                        "value": "aad0894e-47f4-4ffc-8fab-8fe5487110d2"
                     },
                     {
                         "system": "http://hospital.smarthealthit.org",
@@ -231,7 +219,7 @@
                             ],
                             "text": "Medical Record Number"
                         },
-                        "value": "b1cf5f57-b061-4b7f-aa9d-6283a121694b"
+                        "value": "aad0894e-47f4-4ffc-8fab-8fe5487110d2"
                     },
                     {
                         "system": "http://hl7.org/fhir/sid/us-ssn",
@@ -245,7 +233,7 @@
                             ],
                             "text": "Social Security Number"
                         },
-                        "value": "999-45-9851"
+                        "value": "999-21-5963"
                     },
                     {
                         "system": "urn:oid:2.16.840.1.113883.4.3.25",
@@ -259,7 +247,7 @@
                             ],
                             "text": "Driver's License"
                         },
-                        "value": "S99917866"
+                        "value": "S99984181"
                     }
                 ],
                 "maritalStatus": {
@@ -275,12 +263,12 @@
                 "multipleBirthBoolean": false,
                 "name": [
                     {
-                        "family": "Conn188",
+                        "family": "Corwin846",
                         "given": [
-                            "Garland107"
+                            "Jama227"
                         ],
                         "prefix": [
-                            "Mr."
+                            "Ms."
                         ],
                         "use": "official"
                     }
@@ -289,72 +277,72 @@
                     {
                         "system": "phone",
                         "use": "home",
-                        "value": "555-572-6599"
+                        "value": "555-442-3071"
                     }
                 ],
                 "resourceType": "Patient"
             }
         },
         {
-            "fullUrl": "urn:uuid:0313fc54-8f18-11ea-9e9f-a4d18ccf5172",
+            "fullUrl": "urn:uuid:aee4406a-94c3-11ea-ad3d-8cae4cf416f7",
             "resource": {
-                "id": "09178b24-9340-47ec-90b2-1aac03248cd5",
+                "id": "76ebe279-211e-493a-8318-4bc784129ac5",
                 "address": {
-                    "city": "PLYMOUTH",
+                    "city": "SOUTH WEYMOUTH",
                     "country": "US",
                     "line": [
-                        "275 SANDWICH STREET"
+                        "55 FOGG ROAD"
                     ],
-                    "postalCode": "02360",
+                    "postalCode": "02190",
                     "state": "MA"
                 },
                 "managingOrganization": {
-                    "display": "BETH ISRAEL DEACONESS HOSPITAL - PLYMOUTH",
-                    "reference": "urn:uuid:03140708-8f18-11ea-9e9f-a4d18ccf5172"
+                    "display": "SOUTH SHORE HOSPITAL",
+                    "reference": "urn:uuid:aee45384-94c3-11ea-ad3d-8cae4cf416f7"
                 },
-                "name": "BETH ISRAEL DEACONESS HOSPITAL - PLYMOUTH",
+                "name": "SOUTH SHORE HOSPITAL",
                 "position": {
-                    "latitude": 41.897892,
-                    "longitude": -70.62403
+                    "latitude": 42.24158900000001,
+                    "longitude": -71.082651
                 },
                 "status": "active",
                 "telecom": [
                     {
                         "system": "phone",
-                        "value": "5087462000"
+                        "value": "7813408000"
                     }
                 ],
                 "resourceType": "Location"
             }
         },
         {
-            "fullUrl": "urn:uuid:031401d6-8f18-11ea-9e9f-a4d18ccf5172",
+            "fullUrl": "urn:uuid:aee44a06-94c3-11ea-ad3d-8cae4cf416f7",
             "resource": {
-                "id": "0000016f-57cb-cdac-0000-0000000000dc",
+                "id": "0000016f-57cb-cdac-0000-00000000019a",
                 "active": true,
                 "address": [
                     {
-                        "city": "PLYMOUTH",
+                        "city": "SOUTH WEYMOUTH",
                         "country": "US",
                         "line": [
-                            "275 SANDWICH STREET"
+                            "55 FOGG ROAD"
                         ],
-                        "postalCode": "02360",
+                        "postalCode": "02190",
                         "state": "MA"
                     }
                 ],
-                "gender": "male",
+                "gender": "female",
                 "identifier": [
                     {
                         "system": "http://hl7.org/fhir/sid/us-npi",
-                        "value": "220"
+                        "value": "410"
                     }
                 ],
                 "name": [
                     {
-                        "family": "Schmeler639",
+                        "family": "Willms744",
                         "given": [
-                            "Tommy814"
+                            "Raina861"
                         ],
                         "prefix": [
                             "Dr."
@@ -371,39 +359,39 @@
                         ],
                         "system": "email",
                         "use": "work",
-                        "value": "Tommy814.Schmeler639@example.com"
+                        "value": "Raina861.Willms744@example.com"
                     }
                 ],
                 "resourceType": "Practitioner"
             }
         },
         {
-            "fullUrl": "urn:uuid:03140708-8f18-11ea-9e9f-a4d18ccf5172",
+            "fullUrl": "urn:uuid:aee45384-94c3-11ea-ad3d-8cae4cf416f7",
             "resource": {
-                "id": "b1ddf812-1fdd-3adf-b1d5-32cc8bd07ebb",
+                "id": "db0acede-4abe-3c01-8d03-5c68a190d8c7",
                 "active": true,
                 "address": [
                     {
-                        "city": "PLYMOUTH",
+                        "city": "SOUTH WEYMOUTH",
                         "country": "US",
                         "line": [
-                            "275 SANDWICH STREET"
+                            "55 FOGG ROAD"
                         ],
-                        "postalCode": "02360",
+                        "postalCode": "02190",
                         "state": "MA"
                     }
                 ],
                 "identifier": [
                     {
                         "system": "https://github.com/synthetichealth/synthea",
-                        "value": "b1ddf812-1fdd-3adf-b1d5-32cc8bd07ebb"
+                        "value": "db0acede-4abe-3c01-8d03-5c68a190d8c7"
                     }
                 ],
-                "name": "BETH ISRAEL DEACONESS HOSPITAL - PLYMOUTH",
+                "name": "SOUTH SHORE HOSPITAL",
                 "telecom": [
                     {
                         "system": "phone",
-                        "value": "5087462000"
+                        "value": "7813408000"
                     }
                 ],
                 "type": [
@@ -422,9 +410,9 @@
             }
         },
         {
-            "fullUrl": "urn:uuid:03140c62-8f18-11ea-9e9f-a4d18ccf5172",
+            "fullUrl": "urn:uuid:aee45d02-94c3-11ea-ad3d-8cae4cf416f7",
             "resource": {
-                "id": "64620614-f540-46d2-9bdb-af52c8528fdc",
+                "id": "5e83a7b0-6ce9-48c0-aede-81ef3a12b69e",
                 "category": [
                     {
                         "coding": [
@@ -455,12 +443,12 @@
                     "text": "Examplitis"
                 },
                 "encounter": {
-                    "reference": "urn:uuid:0313f02e-8f18-11ea-9e9f-a4d18ccf5172"
+                    "reference": "urn:uuid:aee42e86-94c3-11ea-ad3d-8cae4cf416f7"
                 },
-                "onsetDateTime": "2018-02-17T15:07:39-08:00",
-                "recordedDate": "2018-02-17T15:07:39-08:00",
+                "onsetDateTime": "2019-07-06T18:47:44-07:00",
+                "recordedDate": "2019-07-06T18:47:44-07:00",
                 "subject": {
-                    "reference": "urn:uuid:0313f6a0-8f18-11ea-9e9f-a4d18ccf5172"
+                    "reference": "urn:uuid:aee4366a-94c3-11ea-ad3d-8cae4cf416f7"
                 },
                 "verificationStatus": {
                     "coding": [
@@ -474,60 +462,60 @@
             }
         },
         {
-            "fullUrl": "urn:uuid:031412ca-8f18-11ea-9e9f-a4d18ccf5172",
+            "fullUrl": "urn:uuid:aee464f0-94c3-11ea-ad3d-8cae4cf416f7",
             "resource": {
-                "id": "cc9bcd18-2bf4-11ea-a5f5-a4d18ccf5172",
+                "id": "ccb4874a-2bf4-11ea-a5f5-a4d18ccf5172",
                 "beneficiary": {
-                    "reference": "urn:uuid:0313f6a0-8f18-11ea-9e9f-a4d18ccf5172"
+                    "reference": "urn:uuid:aee4366a-94c3-11ea-ad3d-8cae4cf416f7"
                 },
                 "payor": [
                     {
-                        "display": "UnitedHealthcare",
-                        "reference": "urn:uuid:031417f2-8f18-11ea-9e9f-a4d18ccf5172"
+                        "display": "Anthem",
+                        "reference": "urn:uuid:aee46b12-94c3-11ea-ad3d-8cae4cf416f7"
                     }
                 ],
                 "status": "active",
                 "subscriberId": "12345",
                 "type": {
-                    "text": "UnitedHealthcare"
+                    "text": "Anthem"
                 },
                 "resourceType": "Coverage"
             }
         },
         {
-            "fullUrl": "urn:uuid:031417f2-8f18-11ea-9e9f-a4d18ccf5172",
+            "fullUrl": "urn:uuid:aee46b12-94c3-11ea-ad3d-8cae4cf416f7",
             "resource": {
-                "id": "cc9bcfac-2bf4-11ea-a5f5-a4d18ccf5172",
+                "id": "ccb48ab0-2bf4-11ea-a5f5-a4d18ccf5172",
                 "active": true,
                 "address": [
                     {
-                        "city": "Minnetonka",
+                        "city": "Indianapolis",
                         "line": [
-                            "9800 Healthcare Lane"
+                            "220 Virginia Ave"
                         ],
-                        "postalCode": "55436",
-                        "state": "MN"
+                        "postalCode": "46204",
+                        "state": "IN"
                     }
                 ],
                 "identifier": [
                     {
                         "system": "http://hl7.org/fhir/sid/us-npi",
-                        "value": "0000010006"
+                        "value": "0000010009"
                     }
                 ],
-                "name": "UnitedHealthcare",
+                "name": "Anthem",
                 "telecom": [
                     {
                         "system": "phone",
                         "use": "work",
-                        "value": "1-888-545-5205"
+                        "value": "1-800-331-1476"
                     }
                 ],
                 "resourceType": "Organization"
             }
         },
         {
-            "fullUrl": "urn:uuid:03141cde-8f18-11ea-9e9f-a4d18ccf5172",
+            "fullUrl": "urn:uuid:aee476e8-94c3-11ea-ad3d-8cae4cf416f7",
             "resource": {
                 "id": "sending-organization",
                 "active": true,
@@ -559,7 +547,7 @@
             }
         }
     ],
-    "timestamp": "2020-05-05T21:33:08.175644Z",
+    "timestamp": "2020-05-13T02:44:36.179469Z",
     "type": "message",
     "resourceType": "Bundle"
 }
