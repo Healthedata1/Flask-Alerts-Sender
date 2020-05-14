@@ -7,8 +7,16 @@
     {% if endpoint == '$process-message'%}Da Vinci Notification Message Bundle{% else %}FHIR transaction Bundle with entries of Da Vinci Notification Message Bundles{% endif %}. After the Sender asssembles the FHIR {% if endpoint == '$process-message'%}Message Bundle{% else %} transaction Bundle{% endif %} it sends it to the Reciever/Intermediary using {% if endpoint == '$process-message'%}the $process-message operation{% else %}the <code>transaction</code> interaction{% endif %} as defined the FHIR RESTful API.</p>
 
 <div>
+  <p><strong>Bundle Contents for Admit/Transfer/Discharge</strong></p>
+    <img alt="Bundle contents" class="img-responsive" src="{{url_for('static', filename='images/bundle_graphic.svg')}}">
+</div>
+
+<div>
     <img alt="trigger event" class="img-responsive" src="{{url_for('static', filename='images/process-message.png')}}">
 </div>
+
+
+
 <br/>
   {% for k,v in endpoint_urls.items() %}
   {% set image = 'images/' + k + '.png' %}
