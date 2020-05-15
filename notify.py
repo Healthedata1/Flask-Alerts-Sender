@@ -112,6 +112,7 @@ alerts_servers = { # base_url for alerts server
     #'One Medical': "https://dev.fhir.onemedical.io/r4",
     #'Guidewell-Edifecs': 'https://davinci.collablynk.com/payer/alerts',
     #'IBC': 'https://tbd'
+    "EMR Direct": 'https://stage.healthtogo.me:8181/fhir/r4/stage'
     }
 
 # some timestamp formats
