@@ -11,9 +11,20 @@
     <img alt="trigger event" class="img-responsive" src="{{url_for('static', filename='images/bundle.png')}}">
   </div>
 <br/>
-  <a class="btn btn-primary btn-lg" role="button" href="{{url_for('home')}}/{{ r_id }}">CLICK HERE to Assemble the Da Vinci Notification Bundle</a>
+<form action="/MessageBundle" method="post" name="get-bundle">
+<!--  <a class="btn btn-primary btn-lg" role="button" href="{{url_for('home')}}/{{ r_id }}">CLICK HERE to Assemble the Da Vinci Notification Bundle</a>
   <br/>
+-->
+<input type="submit" class="btn btn-primary btn-lg" role="button" value="CLICK HERE to Assemble the Da Vinci Notification Bundle"></input>
+ <br/>
+    <input type="radio" name="intermed" id="no-intermed" value="" checked/>
+    <label for="intermed-no-change"> Not Intermediary forwarding message</label><br>
+    <input type="radio" name="intermed" id="intermed-no-change" value="transmit"/>
+    <label for="intermed-no-change"> Intermediary forwarding message with no change to content</label><br>
+    <input type="radio" name="intermed" id="intermed-change" value="amend"/>
+    <label for="intermed-change"> Intermediary forwarding message with change to content (removal of Coverage resource)</label><br>
   <br/>
+</form>
 <hr/>
 {% for i in r_id.split(",") %}
 {% if r_id.split(",") | length > 1%}
