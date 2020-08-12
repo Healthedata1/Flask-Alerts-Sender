@@ -4,7 +4,7 @@ simple flask app to fetch data build a bundle and send as $process-message opera
 use ps aux | grep Flask to find app and kill
 '''
 
-from flask import Flask, render_template, redirect, url_for, session, send_from_directory, request
+from flask import Flask, render_template, redirect, url_for, session, send_from_directory, request, Response
 from werkzeug.contrib.cache import SimpleCache
 import sys, datetime, uuid
 from json import load, dumps, loads
@@ -107,6 +107,7 @@ ref_server =  {  # base_url for reference server - no trailing forward slash
 #ref_server_name = "FHIR R4"
 ref_server_name = "HAPI UHN R4"
 alerts_servers = { # base_url for alerts server
+    "Intermediary-Simulator": '/DaVinci-Notifications-Intermediary',
     "Alerts-RI": 'https://davinci-alerts-receiver.logicahealth.org/fhir',
     #'Cigna': 'https://ttbfdsk0pc.execute-api.us-east-1.amazonaws.com/dev',
     'WildFHIR': "http://wildfhir4.aegis.net/fhir4-0-1",
@@ -365,6 +366,7 @@ def template_test():
         pass
     session['my_encounters']=[]
     session['f_names']=[]
+    session['resource_list']=[]
 
     app.logger.info(f'******* sessions = {session}')
     #cache.get('f_name') #clear upload files if present in cache.
@@ -500,21 +502,13 @@ def r_id(r_ids, hx, ver):
            r_pyfhir=encounters,
            )
 
-
-@app.route("/MessageBundle", methods=["POST"])
+@app.route("/MessageBundle", methods=["POST", "GET"])
 def mb():
     '''
-    General approach
     fetch encounter ids - 1 for single bundle, multiple for batching using a transaction bundle
     create messageheader, coverage, orgs 1 and 2
     fetch graph of resources as list
     create bundle
-
-    if "intermed-no-change" is checked then add provenance for MH
-    elif "intermed-change" is checked then add provenance for MH and Bundle and
-    don't add coverage
-    use prov template as dicts with variable
-    add static text for forwarding messages
     '''
 
     ################### Assemble Bundle ################################
@@ -522,9 +516,10 @@ def mb():
     #app.logger.info(f'****** line 465 see what is in cache = {cache.get("encounters")}***')
 
     #encounters = cache.get("encounters") # get resources from cache
-    resource_list=[]
+    session['resource_list'] = []
     message_bundles =[]
     now = datetime.datetime.utcnow()
+
     ################
     #for loop over encounters,  if encounter length > 1 then create transaction Bundles
     #################
@@ -557,8 +552,7 @@ def mb():
         mh.destination[0].name = list(alerts_servers.keys())[0]
         mh.destination[0].endpoint = list(alerts_servers.values())[0]
         # TODO make a selection for the destination
-
-        if request.form['intermed']:
+        if request.method == 'POST':
             mh.sender.reference = "urn:uuid:4f7c997a-d6a4-11ea-814c-b5baa7182d44"  # hardcoded for now
             mh.sender.display = "Acme Message Sender"  # hardcoded for now
             mh.source.name = "Acme Message Sender"
@@ -580,7 +574,7 @@ def mb():
         resources.insert(0, mh)
 
         ################### Get Provenance ################################
-        if request.form['intermed']:
+        if request.method == 'POST':
             app.logger.info(f'************intermed {request.form["intermed"]} is checked*************')
             app.logger.info(f'************encounter.serviceProvider.reference {encounter.serviceProvider.reference} type is {type(encounter.serviceProvider.reference)}*************')
             resource = get_prov( target=f'MessageHeader/{mh.id}',
@@ -613,7 +607,7 @@ def mb():
         coverage = pyfhir(r_dict=resource)
         append_resource(resource, resources, Type='Coverage')
 
-        if coverage and not request.form['intermed']: # example for intermediary as sender with change in content
+        if coverage and request.method == 'GET': # example for intermediary as sender with change in content
             my_id = get_r_id(coverage,'payor','reference')
             resource = fetch('Organization',
                             _id=my_id,
@@ -626,7 +620,7 @@ def mb():
         resources.append(resource)
 
         message_bundles.append(bundler(resources,'message', validate_me)) # returns as json string!
-        resource_list = resource_list + [f'{r.resource_type}/{r.id}' for r in resources]
+        session['resource_list'] = [f'{r.resource_type}/{r.id}' for r in resources]
         ################### End Assemble Bundle ################################
         # endfor loop over encounters,  if encounter length > 1 then create transaction Bundles
 
@@ -649,7 +643,9 @@ def mb():
         endpoint = 'transaction'
 
     # writing to ig examples file and running the IG Build:
-    f_name = f'davinci_notification_bundle_{now.strftime("%Y%m%d%H%M%S.%f")}.json'
+    #f_name = f'davinci_notification_bundle_{now.strftime("%Y%m%d%H%M%S.%f")}.json'
+    b_id = loads(notification_bundle)["id"]
+    f_name = f'davinci-notification-bundle-{b_id}.json'
     write_out(app.root_path, f_name, notification_bundle)
     app.logger.info(f'writing example notification bundle to {app.root_path}/test_output/{f_name}')
     session['f_names'].append(f_name) # keep track of f_names for session to delete later
@@ -667,17 +663,142 @@ def mb():
     return render_template('sub_template5.html',
            my_string=my_string,
            title="Notification Bundle Prep",
-           resource_list=resource_list,
            endpoint_urls = alerts_servers,
            endpoint = endpoint,
            notification_bundle = notification_bundle,
-           f_name=f_name,
+           b_id=b_id,
+           )
+
+@app.route("/ForwardBundle", methods=["POST"])
+def fwd():
+    '''
+    reassemble message bundle:
+    new bundle id, timestamp
+    new messageheader.id and sender and source and destination
+    if "intermed-no-change" is checked then add provenance for MH
+    elif "intermed-change" is checked then add provenance for MH and Bundle and
+    don't add coverage
+    use prov template as dicts with variable
+    add static text for forwarding messages
+    '''
+    now = datetime.datetime.utcnow()
+    fhir_now = FD.FHIRDate(f'{str(now.isoformat())}Z')
+
+    #get existing bundle and modify
+    app.logger.info(f'****** see what is in session = {session}')
+    f_name=session['f_names'][-1]
+    app.logger.info(f'line nnnn f_name list = {session["f_names"]} f_name item = {f_name}')
+    data = read_in(in_path=app.root_path,f_name=f_name) # most recent saved bundle
+    #data = cache.get('notification_bundle')
+    app.logger.info(f'data = {data}')
+
+    #convert to r4models
+    b = pyfhir(loads(data))
+    b.id = str(uuid.uuid1())
+    b.timestamp = fhir_now
+    mh =  b.entry[0].resource
+    mh.id = str(uuid.uuid1())
+    b.entry[0].fullUrl = uuid.UUID(mh.id).urn
+    mh.sender.reference = "urn:uuid:4f7c997a-d6a4-11ea-814c-b5baa7182d44"  # hardcoded for now
+    mh.sender.display = "Acme Message Sender"  # hardcoded for now
+    mh.source.name = "Acme Message Sender"
+    mh.source.endpoint = "https://example.org/Endpoints/P456"
+    mh.source.contact.system = 'phone'
+    mh.source.contact.value = '+1-800-555-5555'
+    mh.source.software = None
+    mh.source.version = None
+    b.entry[0].fullUrl = uuid.UUID(mh.id).urn
+    session['resource_list'][0] = f'MessageHeader/{mh.id}'
+
+    ################### Get Provenance ################################
+    app.logger.info(f'************intermed is {request.form["intermed"]}*************')
+
+    provenance = get_prov(target=f'MessageHeader/{mh.id}',
+                        author=mh.author.reference,
+                        org=mh.responsible.reference,
+                        sender=mh.sender.reference,
+                        activity=request.form['intermed'],
+                        now=now, )
+    prov_entry = B.BundleEntry()
+    prov_entry.fullUrl = uuid.UUID(provenance.id).urn
+    prov_entry.resource = provenance
+    b.entry.insert(1, prov_entry)
+    session['resource_list'].insert(1,f'Provenance/{provenance.id}')
+
+    ################### Reomve Coverage ################################
+    if request.form['intermed'] == 'amend': # example for intermediary as sender with change in content
+        try:
+            coverage_index = next((index for (index, r) in enumerate(b.entry)
+                   if r.resource.resource_type == 'Coverage'))
+        except StopIteration:
+            pass
+        else:
+            b.entry.pop(coverage_index)
+            session['resource_list'].pop(coverage_index)
+
+    # writing to ig examples file and running the IG Build:
+    notification_bundle = dumps(b.as_json(), indent=4)
+    #app.logger.info(f'notification_bundle = {message_bundles[0]}')
+    f_name = f'davinci-notification-bundle-{b.id}.json'
+    write_out(app.root_path, f_name, notification_bundle)
+    app.logger.info(f'writing example notification bundle to {app.root_path}/test_output/{f_name}')
+    session['f_names'].append(f_name) # keep track of f_names for session to delete later
+    session.modified = True
+    app.logger.info(f'****** line 587 see what is in session = {session}***')
+
+    return render_template('sub_template5.html',
+           title="Forwarding Notification Bundle Prep",
+           endpoint_urls = alerts_servers,
+           endpoint = '$process-message',
+           notification_bundle = notification_bundle,
+           b_id=b.id,
+           forwarding = True,
            )
 
 @app.route('/uploads/<path:filename>', methods=['GET', 'POST'])
 def download(filename):
     directory= f'{app.root_path}/test_output'
     return send_from_directory(directory= directory, filename=filename, as_attachment=True, mimetype='application/json')
+
+@app.route("/Intermediary-Simulator/$process-message")
+def intermediary():
+    '''
+    intermediary simulator
+    return 200 status_code
+    buttons for forwarding message bundle with and without changes
+
+    if "intermed-no-change" modify Bundle to add provenance for MH with actor = transmitter
+    elif "intermed-change" remove Coverage and modify Bundle to add provenance for MH with actor = assembler
+    '''
+
+    response = Response()
+    response.headers["Access-Control-Allow-Origin"] = "*"
+
+    oo = {
+        "resourceType": "OperationOutcome",
+        "id": "intermediary-response",
+        "text": {
+            "status": "generated",
+            "div": "<div><p><b>Operation Outcome for :</b></p><p>All OK</p><table class=\"grid\"><tr><td><b>Severity</b></td><td><b>Location</b></td><td><b>Details</b></td><td><b>Diagnostics</b></td><td><b>Type</b></td></tr><tr><td>information</td><td/><td>The message was received and the message has been fully processed</td><td/><td>informational</td></tr></table></div>"
+        },
+        "issue": [
+            {
+                "severity": "information",
+                "code": "informational",
+                "details": {
+                    "text": "The message was received and the message has been fully processed"
+                }
+            }
+        ]
+    }
+    return render_template('sub_template6.html',
+                       my_string1=f"#### Response from Intermediary Simulator Server: **200**",
+                       my_string2="url = [base]/FHIR/R4/Intermediary-Simulator/$process-message",
+                       title="$process-message Response From Intermediary-Simulator",
+                        headers = dict(response.headers),
+                        oo = oo,
+                        intermed=True,
+                        )
 
 @app.route("/<string:alerts_server>/$process-message")
 def process_message(alerts_server):
@@ -693,7 +814,7 @@ def process_message(alerts_server):
         app.logger.info(f'*******alerts_server = {alerts_server}******')
         app.logger.info(f'****** line 624 see what is in session = {session}')
         f_name=session['f_names'][-1]
-        #app.logger.info(f'line 627 ***** f_name  list = {session["f_names"]} f_name item =  {session["f_names"][-1]}')
+        app.logger.info(f'line 627 ***** f_name  list = {session["f_names"]} f_name item =  {session["f_names"][-1]}')
         data = read_in(in_path=app.root_path,f_name=f_name) # most recent saved bundle
         #data = cache.get('notification_bundle')
         app.logger.info(f'data = {data}')

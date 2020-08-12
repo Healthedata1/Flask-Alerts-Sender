@@ -17,7 +17,11 @@ For single "real-time" Notifications:
   1. Builds the Da Vinci Notifications Message Bundle
   1. Submits the Message to the nominated endpoint using the `$process-message` operation
   1. Receives and displays the $process-message operation response from the server
+  1. If the endpoint is an Intermediary either:
+     - Forwards a new Message with **no changes** to the content to the nominated endpoint using the `$process-message` operation
+     - or Forwards a new changed Message with **changes** to the content (removal of Coverage resource) to the nominated endpoint using the `$process-message` operation
 
+<!--
 For a Batch Transaction of multiple Notification:
 
   1. Fetches all the relevant *Admit* and *Discharge* Encounters from the **{ref_server}** Reference Server
@@ -30,6 +34,7 @@ For a Batch Transaction of multiple Notification:
   <div>
     <img alt="trigger event" class="img-responsive" src="{{url_for('static', filename='images/trigger.png')}}">
   </div>
+-->
 
 <hr/>
 

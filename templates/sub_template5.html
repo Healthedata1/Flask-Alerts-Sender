@@ -10,11 +10,15 @@
   <p><strong>Bundle Contents for Admit/Transfer/Discharge</strong></p>
     <img alt="Bundle contents" class="img-responsive" src="{{url_for('static', filename='images/bundle_graphic.svg')}}">
 </div>
-
+{% if forwarding %}
 <div>
-    <img alt="trigger event" class="img-responsive" src="{{url_for('static', filename='images/process-message.png')}}">
+    <img alt="Forwarding Message" class="img-responsive" src="{{url_for('static', filename='images/forward.png')}}">
 </div>
-
+{% else %}
+<div>
+    <img alt="Sending Message" class="img-responsive" src="{{url_for('static', filename='images/send.png')}}">
+</div>
+{% endif %}
 
 
 <br/>
@@ -27,19 +31,19 @@
 
 {% endfor %}
 
-<p>{{ my_string | markdown | safe }}</p>
+<h4>Getting Bundle ready for {% if forwarding %}forwarding{% else %}sending{% endif %} the Da Vinci Notification Message Bundle for Encounter id={{ session.my_encounters[-1][0] }} ver={{ session.my_encounters[-1][1] }}</h4>
 <!-- TODO fix the list to match the output...need updated ids -->
 list of resources in Bundle:
 <ul>
-{% for i in resource_list %}
+{% for i in session.resource_list %}
 <li>
 {{i}}
 </li>
 {% endfor %}
 </ul>
 
-<h4>Notification Bundle Resource:</h4>
-<a class="btn btn-default btn-lg" role="button" href="../uploads/{{f_name}}">Download</a>
+<h4>Notification Bundle Resource: id = {{b_id}}</h4>
+<a class="btn btn-default btn-lg" role="button" href="../uploads/{{ session.f_names[-1] }}">Download</a>
 <br/>
 <pre>
 {{ notification_bundle }}
