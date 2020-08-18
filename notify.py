@@ -120,7 +120,7 @@ alerts_servers = { # base_url for alerts server
 # some timestamp formats
 now = f'{str(datetime.datetime.utcnow().isoformat())}Z' # get url freindly time stamp
 id_safe_now = datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S.%f')
-
+RFC1123_date = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
 ############################
 
 # ************** fetch last bundle from local filesystem **************
@@ -131,7 +131,7 @@ def get_sessionfile(alerts_server):
     pydata = pyfhir(loads(data))  # convert to fhirclient model
     pydata.entry[0].resource.destination[0].name = alerts_server
     pydata.entry[0].resource.destination[0].endpoint = alerts_servers[alerts_server]
-    return dumps(pydata.as_json())  #convert back to string
+    return pydata.as_json()  #convert to dict
 
 #  ************************** add profiles ************************
 def add_profile(r):
@@ -782,7 +782,7 @@ def intermediary():
 
     response = Response()
     response.headers["Access-Control-Allow-Origin"] = "*"
-    # sample OperationOutcome if preferl return=OperationOutcome  future use case
+    response.headers["date"] = RFC1123_date
     oo = {
         "resourceType": "OperationOutcome",
         "id": "intermediary-response",
@@ -801,7 +801,7 @@ def intermediary():
         ]
     }
     # default to return the full resource
-    representation = get_sessionfile(alerts_server)
+    representation = get_sessionfile('Intermediary-Simulator')
     return render_template('sub_template6.html',
                        my_string1=f"#### Response from Intermediary Simulator Server: **200**",
                        my_string2="url = [base]/FHIR/R4/Intermediary-Simulator/$process-message",
@@ -827,7 +827,7 @@ def process_message(alerts_server):
         data = get_sessionfile(alerts_server)
         app.logger.info(f'data = {data}')
         #with post(f'{alerts_servers[alerts_server]}/$process-message', headers=headers, data=data) as r:
-        r = post_bundle(alerts_server=f'{alerts_servers[alerts_server]}/$process-message', headers=headers, data=data)
+        r = post_bundle(alerts_server=f'{alerts_servers[alerts_server]}/$process-message', headers=headers, data=dumps(data))
         try:
             oo = r.json()
         except:

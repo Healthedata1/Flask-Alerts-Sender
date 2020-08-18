@@ -5,7 +5,7 @@
 
 <p> See below for the response from the {% if title == "Transaction Bundle Response" %}transaction{% else %}$process-message{% endif %} endpoint server (Receiver/Intermediary).
 {% if intermed %}
-Scroll down to initiate the forwarding of the the Message Bundle by the Intermediary as defined in the a Vinci Unsolicited Notifications Implementation Guide.
+Click on this <a href=#forward>link</a> or scroll down to initiate the forwarding of the the Message Bundle by the Intermediary as defined in the a Vinci Unsolicited Notifications Implementation Guide.
 {% endif %}
 Click "Home" in the menu bar to start over
 </p>
@@ -23,7 +23,7 @@ Click "Home" in the menu bar to start over
 {{ headers | tojson(indent=4) }}
 </pre>
 
-<h4>Operation Outcome:</h4>
+<h4>Operation Outcome or Resource:</h4>
 <pre>
 {{ oo | tojson(indent=4) }}
 </pre>
@@ -31,6 +31,7 @@ Click "Home" in the menu bar to start over
 <hr />
 
 {% if intermed %}
+<a name="forward"></a>
 <h4>
 Forwarding the Message Bundle
 </h4>
