@@ -19,7 +19,7 @@ For single "real-time" Notifications:
   1. Receives and displays the $process-message operation response from the server
   1. If the endpoint is an Intermediary either:
      - Forwards a new Message with **no changes** to the content to the nominated endpoint using the `$process-message` operation
-     - or Forwards a new changed Message with **changes** to the content (removal of Coverage resource) to the nominated endpoint using the `$process-message` operation
+     - or Forwards a new changed Message with **changes** to the content (removal of Coverage reosource and the Organization resource it references) to the nominated endpoint using the `$process-message` operation
 
 <!--
 For a Batch Transaction of multiple Notification:

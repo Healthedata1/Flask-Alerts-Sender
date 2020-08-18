@@ -15,8 +15,8 @@ messageheader={
   },
   "destination" : [
     {
-      "name" : "Acme Message Gateway",
-      "endpoint" : "https://example.org/Endpoints/P123"
+      "name" : "My Destination",
+      "endpoint" : "https://example.org/Endpoints/my-destination"
     }
   ],
   "sender" : {
@@ -28,8 +28,8 @@ messageheader={
     "display" : "Ronald Bone"
   },
   "source" : {
-    "name" : "Acme Central Patient Registry",
-    "software" : "FooBar Patient Manager",
+    "name" : "Source Application",
+    "software" : "Acme Patient Manager",
     "version" : "3.1.45.AABB",
     "contact" : {
       "system" : "phone",

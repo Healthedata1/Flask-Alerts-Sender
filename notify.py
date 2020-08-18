@@ -25,7 +25,7 @@ app.secret_key = 'my secret key'
 cache = SimpleCache()
 
 ####### Globals #############
-validate_me = False # to save for validation in IG
+validate_me = True # to save for validation in IG
 
 profile_list = dict(
 
@@ -112,7 +112,7 @@ alerts_servers = { # base_url for alerts server
     #'Cigna': 'https://ttbfdsk0pc.execute-api.us-east-1.amazonaws.com/dev',
     'WildFHIR': "http://wildfhir4.aegis.net/fhir4-0-1",
     #'One Medical': "https://dev.fhir.onemedical.io/r4",
-    #'Guidewell-Edifecs': 'https://davinci.collablynk.com/payer/alerts',
+    #'Guidewell-Edifecs': 'https://davinci.collablynk.com/payor/alerts',
     #'IBC': 'https://tbd'
     "EMR Direct": 'https://stage.healthtogo.me:8181/fhir/r4/stage'
     }
@@ -128,13 +128,17 @@ def add_profile(r):
     try:
         r.meta.profile.append(profile_list[r.resource_type])# add profile if meta.profile already there
         r.meta.profile = list(set(r.meta.profile))# remove duplicate
+        app.logger.info(f'******meta = {r.meta.profile}***')
+
     except AttributeError: # no profile
         #r.meta = M.Meta()
         try:
             r.meta.profile = [(profile_list[r.resource_type])]
+            app.logger.info(f'******meta = {r.meta.profile}***')
         except AttributeError: # no meta
             r.meta = M.Meta()
             r.meta.profile = [(profile_list[r.resource_type])]
+            app.logger.info(f'******meta = {r.meta.profile}***')
 
 # *************************** check and append **************
 
@@ -305,6 +309,7 @@ def bundler(resources, type, validate_me=False):
 
         bundle.entry.append(entry)
     app.logger.info(f'ref_map = {dumps(ref_map, indent = 4)}')
+    app.logger.info(f'meta elements = {[i.resource.meta.profile for i in bundle.entry]}')
     b_json = dumps(bundle.as_json(), indent=4)
     # replace old references with new urns
     for old_ref, new_urn in ref_map.items():
@@ -540,30 +545,22 @@ def mb():
         elif encounter.status == "in-progress" and encounter.class_fhir.code == "IMP":
             mh.eventCoding.code =  'notification-transfer'
             mh.eventCoding.display = 'Notification Transfer'
-            mh.meta.profile = profile_list['MessageHeader_transfer']
+            mh.meta.profile[1] = profile_list['MessageHeader_transfer']
         elif encounter.status == "finished":
             mh.eventCoding.code =  'notification-discharge'
             mh.eventCoding.display = 'Notification Discharge'
-            mh.meta.profile = profile_list['MessageHeader_discharge']
+            mh.meta.profile[1] = profile_list['MessageHeader_discharge']
 
 
         # TODO add discharge subtypes and handle other statuses
         mh.focus[0].display = f'{mh.eventCoding.display}({encounter.type[0].text})'
-        mh.destination[0].name = list(alerts_servers.keys())[0]
-        mh.destination[0].endpoint = list(alerts_servers.values())[0]
+
+        # mh.destination[0].name = list(alerts_servers.keys())[0]
+        # mh.destination[0].endpoint = list(alerts_servers.values())[0]
         # TODO make a selection for the destination
-        if request.method == 'POST':
-            mh.sender.reference = "urn:uuid:4f7c997a-d6a4-11ea-814c-b5baa7182d44"  # hardcoded for now
-            mh.sender.display = "Acme Message Sender"  # hardcoded for now
-            mh.source.name = "Acme Message Sender"
-            mh.source.endpoint = "https://example.org/Endpoints/P456"
-            mh.source.contact.system = 'phone'
-            mh.source.contact.value = '+1-800-555-5555'
-            mh.source.software = None
-            mh.source.version = None
-        else:
-            mh.sender.reference = encounter.serviceProvider.reference
-            mh.sender.display = encounter.serviceProvider.display
+
+        mh.sender.reference = encounter.serviceProvider.reference
+        mh.sender.display = encounter.serviceProvider.display
 
         mh.author.reference = encounter.participant[0].individual.reference
         mh.author.display = encounter.participant[0].individual.display
@@ -573,18 +570,6 @@ def mb():
 
         resources.insert(0, mh)
 
-        ################### Get Provenance ################################
-        if request.method == 'POST':
-            app.logger.info(f'************intermed {request.form["intermed"]} is checked*************')
-            app.logger.info(f'************encounter.serviceProvider.reference {encounter.serviceProvider.reference} type is {type(encounter.serviceProvider.reference)}*************')
-            resource = get_prov( target=f'MessageHeader/{mh.id}',
-                                author=mh.author.reference,
-                                org=encounter.serviceProvider.reference,
-                                sender=mh.sender.reference,
-                                activity=request.form['intermed'],
-                                 now=now,)
-            resources.insert(1, resource)
-
         for i in get_ids:  # [{Type:Type, args=(args)}]
             Type = i['Type']
             args = i['args']
@@ -593,8 +578,6 @@ def mb():
             app.logger.info(f'******my_id = {my_id}')
             resource = fetch(Type, _id=my_id, ver=None)
             append_resource(resource, resources, Type=Type, id=my_id, is_req = is_req)
-
-
 
         resource = search('Condition',
                          patient=get_r_id(encounter,'subject','reference'), encounter=encounter.id,
@@ -607,17 +590,18 @@ def mb():
         coverage = pyfhir(r_dict=resource)
         append_resource(resource, resources, Type='Coverage')
 
-        if coverage and request.method == 'GET': # example for intermediary as sender with change in content
+        if coverage:
             my_id = get_r_id(coverage,'payor','reference')
             resource = fetch('Organization',
                             _id=my_id,
                          ) # fetch coverage
             append_resource(resource, resources, Type='Organization', id=my_id)
 
-        sender = getattr(fhirtemplates,'sender') # hardcode org for now
-        resource = pyfhir(sender) #convert to fhirclient model
-        add_profile(resource)
-        resources.append(resource)
+        # assume sender = author i.e. no separate sender initially save for intermediary
+        # sender = getattr(fhirtemplates,'sender') # hardcode org for now
+        # resource = pyfhir(sender) #convert to fhirclient model
+        # add_profile(resource)
+        # resources.append(resource)
 
         message_bundles.append(bundler(resources,'message', validate_me)) # returns as json string!
         session['resource_list'] = [f'{r.resource_type}/{r.id}' for r in resources]
@@ -676,8 +660,7 @@ def fwd():
     new bundle id, timestamp
     new messageheader.id and sender and source and destination
     if "intermed-no-change" is checked then add provenance for MH
-    elif "intermed-change" is checked then add provenance for MH and Bundle and
-    don't add coverage
+    elif "intermed-change" is checked then add provenance for MH and and sender Org and remove coverage
     use prov template as dicts with variable
     add static text for forwarding messages
     '''
@@ -700,17 +683,14 @@ def fwd():
     mh.id = str(uuid.uuid1())
     b.entry[0].fullUrl = uuid.UUID(mh.id).urn
     mh.sender.reference = "urn:uuid:4f7c997a-d6a4-11ea-814c-b5baa7182d44"  # hardcoded for now
-    mh.sender.display = "Acme Message Sender"  # hardcoded for now
-    mh.source.name = "Acme Message Sender"
-    mh.source.endpoint = "https://example.org/Endpoints/P456"
+    mh.sender.display = "Da Vinci Intermediary"  # hardcoded for now
+    mh.source.name = "Da Vinci Intermediary Source Application"
+    mh.source.endpoint = "https://example.org/Endpoints/P999"
     mh.source.contact.system = 'phone'
     mh.source.contact.value = '+1-800-555-5555'
-    mh.source.software = None
-    mh.source.version = None
-    b.entry[0].fullUrl = uuid.UUID(mh.id).urn
     session['resource_list'][0] = f'MessageHeader/{mh.id}'
 
-    ################### Get Provenance ################################
+    ################### ADD Provenance ################################SHOULD BE REMOVED NOT NEEDED ANYMORE
     app.logger.info(f'************intermed is {request.form["intermed"]}*************')
 
     provenance = get_prov(target=f'MessageHeader/{mh.id}',
@@ -725,7 +705,17 @@ def fwd():
     b.entry.insert(1, prov_entry)
     session['resource_list'].insert(1,f'Provenance/{provenance.id}')
 
-    ################### Reomve Coverage ################################
+    ################### ADD new sender Org ################################
+    sender = getattr(fhirtemplates,'sender') # hardcode org for now
+    org = pyfhir(sender) #convert to fhirclient model
+    add_profile(org)
+    org_entry = B.BundleEntry()
+    org_entry.fullUrl = uuid.UUID(org.id).urn
+    org_entry.resource = org
+    b.entry.append(org_entry)
+    session['resource_list'].append(f'Organization/{org.id}')
+
+    ################### Remove Coverage and Referenced Org ################################SHOULD BE REMOVED NOT NEEDED ANYMORE
     if request.form['intermed'] == 'amend': # example for intermediary as sender with change in content
         try:
             coverage_index = next((index for (index, r) in enumerate(b.entry)
@@ -733,8 +723,17 @@ def fwd():
         except StopIteration:
             pass
         else:
-            b.entry.pop(coverage_index)
+            coverage = b.entry.pop(coverage_index).resource
             session['resource_list'].pop(coverage_index)
+            payor_url = coverage.payor[0].reference
+            try:
+                payor_index = next((index for (index, r) in enumerate(b.entry)
+                   if r.fullUrl == payor_url))
+            except StopIteration:
+                pass
+            else:
+                b.entry.pop(payor_index)
+                session['resource_list'].pop(payor_index)
 
     # writing to ig examples file and running the IG Build:
     notification_bundle = dumps(b.as_json(), indent=4)
@@ -767,8 +766,8 @@ def intermediary():
     return 200 status_code
     buttons for forwarding message bundle with and without changes
 
-    if "intermed-no-change" modify Bundle to add provenance for MH with actor = transmitter
-    elif "intermed-change" remove Coverage and modify Bundle to add provenance for MH with actor = assembler
+    if "intermed-no-change" modify Bundle to add provenance for MH with actor = transmitte and add sender organization
+    elif "intermed-change" remove Coverage and modify Bundle to add provenance for MH with actor = Assemblerand add sender organization
     '''
 
     response = Response()
@@ -816,6 +815,10 @@ def process_message(alerts_server):
         f_name=session['f_names'][-1]
         app.logger.info(f'line 627 ***** f_name  list = {session["f_names"]} f_name item =  {session["f_names"][-1]}')
         data = read_in(in_path=app.root_path,f_name=f_name) # most recent saved bundle
+        pydata = pyfhir(loads(data))  # convert to fhirclient model
+        pydata.entry[0].resource.destination[0].name = alerts_server
+        pydata.entry[0].resource.destination[0].endpoint = alerts_servers[alerts_server]
+        data = dumps(pydata.as_json())  #convert back to string
         #data = cache.get('notification_bundle')
         app.logger.info(f'data = {data}')
         #with post(f'{alerts_servers[alerts_server]}/$process-message', headers=headers, data=data) as r:
