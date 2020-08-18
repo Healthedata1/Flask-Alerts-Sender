@@ -125,13 +125,13 @@ id_safe_now = datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S.%f')
 
 # ************** fetch last bundle from local filesystem **************
 def get_sessionfile(alerts_server):
-f_name=session['f_names'][-1]
-app.logger.info(f'line 627 ***** f_name  list = {session["f_names"]} f_name item =  {session["f_names"][-1]}')
-data = read_in(in_path=app.root_path,f_name=f_name) # most recent saved bundle
-pydata = pyfhir(loads(data))  # convert to fhirclient model
-pydata.entry[0].resource.destination[0].name = alerts_server
-pydata.entry[0].resource.destination[0].endpoint = alerts_servers[alerts_server]
-return dumps(pydata.as_json())  #convert back to string
+    f_name=session['f_names'][-1]
+    app.logger.info(f'line 627 ***** f_name  list = {session["f_names"]} f_name item =  {session["f_names"][-1]}')
+    data = read_in(in_path=app.root_path,f_name=f_name) # most recent saved bundle
+    pydata = pyfhir(loads(data))  # convert to fhirclient model
+    pydata.entry[0].resource.destination[0].name = alerts_server
+    pydata.entry[0].resource.destination[0].endpoint = alerts_servers[alerts_server]
+    return dumps(pydata.as_json())  #convert back to string
 
 #  ************************** add profiles ************************
 def add_profile(r):
