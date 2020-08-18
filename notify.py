@@ -123,6 +123,16 @@ id_safe_now = datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S.%f')
 
 ############################
 
+# ************** fetch last bundle from local filesystem **************
+def get_sessionfile(alerts_server):
+f_name=session['f_names'][-1]
+app.logger.info(f'line 627 ***** f_name  list = {session["f_names"]} f_name item =  {session["f_names"][-1]}')
+data = read_in(in_path=app.root_path,f_name=f_name) # most recent saved bundle
+pydata = pyfhir(loads(data))  # convert to fhirclient model
+pydata.entry[0].resource.destination[0].name = alerts_server
+pydata.entry[0].resource.destination[0].endpoint = alerts_servers[alerts_server]
+return dumps(pydata.as_json())  #convert back to string
+
 #  ************************** add profiles ************************
 def add_profile(r):
     try:
@@ -772,7 +782,7 @@ def intermediary():
 
     response = Response()
     response.headers["Access-Control-Allow-Origin"] = "*"
-
+    # sample OperationOutcome if preferl return=OperationOutcome  future use case
     oo = {
         "resourceType": "OperationOutcome",
         "id": "intermediary-response",
@@ -790,12 +800,14 @@ def intermediary():
             }
         ]
     }
+    # default to return the full resource
+    representation = get_sessionfile(alerts_server)
     return render_template('sub_template6.html',
                        my_string1=f"#### Response from Intermediary Simulator Server: **200**",
                        my_string2="url = [base]/FHIR/R4/Intermediary-Simulator/$process-message",
                        title="$process-message Response From Intermediary-Simulator",
                         headers = dict(response.headers),
-                        oo = oo,
+                        oo = representation,
                         intermed=True,
                         )
 
@@ -812,14 +824,7 @@ def process_message(alerts_server):
         }
         app.logger.info(f'*******alerts_server = {alerts_server}******')
         app.logger.info(f'****** line 624 see what is in session = {session}')
-        f_name=session['f_names'][-1]
-        app.logger.info(f'line 627 ***** f_name  list = {session["f_names"]} f_name item =  {session["f_names"][-1]}')
-        data = read_in(in_path=app.root_path,f_name=f_name) # most recent saved bundle
-        pydata = pyfhir(loads(data))  # convert to fhirclient model
-        pydata.entry[0].resource.destination[0].name = alerts_server
-        pydata.entry[0].resource.destination[0].endpoint = alerts_servers[alerts_server]
-        data = dumps(pydata.as_json())  #convert back to string
-        #data = cache.get('notification_bundle')
+        data = get_sessionfile(alerts_server)
         app.logger.info(f'data = {data}')
         #with post(f'{alerts_servers[alerts_server]}/$process-message', headers=headers, data=data) as r:
         r = post_bundle(alerts_server=f'{alerts_servers[alerts_server]}/$process-message', headers=headers, data=data)
