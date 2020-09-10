@@ -28,7 +28,6 @@ cache = SimpleCache()
 validate_me = True # to save for validation in IG
 
 profile_list = dict(
-
 Bundle = "http://hl7.org/fhir/us/davinci-alerts/StructureDefinition/notifications-bundle",
 MessageHeader = "http://hl7.org/fhir/us/davinci-alerts/StructureDefinition/notifications-messageheader",
 MessageHeader_admit = "http://hl7.org/fhir/us/davinci-alerts/StructureDefinition/admit-notification-messageheader",
@@ -44,16 +43,6 @@ Organization = "http://hl7.org/fhir/us/core/StructureDefinition/us-core-organiza
 Provenance = "http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance",
 )
 
-'''
-# admit if encounter in progess and type if class =
-admit_types = dict(
-            EMER = 'notification-admit-er',
-            IMP = 'notification-admit-inpatient',
-            OBSENC = 'notification-admit-forobservation',
-            AMB = 'notification-admit-ambulatory',
-        )
-# discharge if encounter completed
-'''
 
 #enc_list = [i for i in range(905,911)] +['foo']# test R4 Server encounters
 #enc_list = [588258,588265,588267,588274,588276,588283]+['foo']# test HAPI R4 Server encounters
@@ -114,7 +103,8 @@ alerts_servers = { # base_url for alerts server
     #'One Medical': "https://dev.fhir.onemedical.io/r4",
     #'Guidewell-Edifecs': 'https://davinci.collablynk.com/payor/alerts',
     #'IBC': 'https://tbd'
-    "EMR Direct": 'https://stage.healthtogo.me:8181/fhir/r4/stage'
+    #"EMR Direct": 'https://stage.healthtogo.me:8181/fhir/r4/stage',
+    'Tell Health': 'http://dev0.tell.health:8888/fhir',
     }
 
 # some timestamp formats
@@ -133,7 +123,7 @@ def get_sessionfile(alerts_server):
     pydata.entry[0].resource.destination[0].endpoint = alerts_servers[alerts_server]
     return pydata.as_json()  #convert to dict
 
-#  ************************** add profiles ************************
+#  ************************** add profiles - Does not differentiate between deqm and US-Core for example ************************
 def add_profile(r):
     try:
         r.meta.profile.append(profile_list[r.resource_type])# add profile if meta.profile already there
