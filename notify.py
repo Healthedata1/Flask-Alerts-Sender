@@ -19,27 +19,16 @@ import fhirclient.r4models.fhirdate as FD
 import fhirclient.r4models.bundle as B
 from utils import write_out, clear_dir, read_in
 from time import sleep
-from logging.config import dictConfig
+import logging
 
-dictConfig({
-    'version': 1,
-    'formatters': {'default': {
-        'format': '[%(asctime)s] %(levelname)s in %(module)s %(lineno)d}: %(message)s',
-    }},
-    'handlers': {'wsgi': {
-        'class': 'logging.StreamHandler',
-        'stream': 'ext://flask.logging.wsgi_errors_stream',
-        'formatter': 'default'
-    }},
-    'root': {
-        'level': 'INFO',
-        'handlers': ['wsgi']
-    }
-})
+logging.basicConfig(
+        level=logging.DEBUG,
+        #filename='/Users/ehaas/Documents/Python/Flask-PL/demo.log',
+        format='[%(asctime)s] %(levelname)s in %(module)s %(lineno)d}: %(message)s',
+        )
 
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = 'my secret key'
-cache = SimpleCache()
 
 ####### Globals #############
 validate_me = False # to save for validation in IG
@@ -205,7 +194,7 @@ def search(Type,**kwargs):
 
     r_url = f'{ref_server[ref_server_name]}/{Type.capitalize()}'
     app.logger.info(f'****** r_url = {ref_server[ref_server_name]}/{Type.capitalize()}***')
-    app.logger.info(f'****** params = {kwargs}*****')
+    #app.logger.info(f'****** params = {kwargs}*****')
     with get(r_url, headers=headers, params=kwargs) as r:
         # return r.status_code
         # view  output
@@ -365,12 +354,12 @@ def keyerror_filter(value, *args):
 
 @app.template_filter()  # to handle AttributeError exception in Jinja for classes
 def atterror_filter(value, *args):
-    app.logger.info(f'****** args={args}***')
+    #app.logger.info(f'****** args={args}***')
     try:
         app.logger.info(f'****** value type value={type(value)}***')
         for arg in args:
-            app.logger.info(f'****** arg = {arg}***')
-            app.logger.info(f'****** getattr({value},{arg}) = {getattr(value,arg)}***')
+            #app.logger.info(f'****** arg = {arg}***')
+            #app.logger.info(f'****** getattr({value},{arg}) = {getattr(value,arg)}***')
             value = getattr(value, arg)[0] if isinstance(getattr(value,arg), list) else getattr(value,arg)
             app.logger.info(f'****** value = {value} , type = {type(value)}***')
         return (value)
@@ -696,7 +685,7 @@ def fwd():
     app.logger.info(f'line nnnn f_name list = {session["f_names"]} f_name item = {f_name}')
     data = read_in(in_path=app.root_path,f_name=f_name) # most recent saved bundle
     #data = cache.get('notification_bundle')
-    app.logger.info(f'data = {data}')
+    #app.logger.info(f'data = {data}')
 
     #convert to r4models
     b = pyfhir(loads(data))
@@ -838,7 +827,7 @@ def process_message(alerts_server):
         app.logger.info(f'*******alerts_server = {alerts_server}******')
         app.logger.info(f'****** see what is in session = {session}')
         data = get_sessionfile(alerts_server)
-        app.logger.info(f'data = {data}')
+        #app.logger.info(f'data = {data}')
         #with post(f'{alerts_servers[alerts_server]}/$process-message', headers=headers, data=data) as r:
         r = post_bundle(alerts_server=f'{alerts_servers[alerts_server]}/$process-message', headers=headers, data=dumps(data))
         try:
@@ -874,7 +863,7 @@ def transaction(alerts_server):
         app.logger.info(f'*******alerts_server = {alerts_server}******')
         app.logger.info(f'*******alerts_server $process-message url = {alerts_servers[alerts_server]}******')
         data = get_sessionfile(alerts_server)
-        app.logger.info(f'data = {data}')
+        #app.logger.info(f'data = {data}')
         with post(f'{alerts_servers[alerts_server]}/', headers=headers, data=data) as r:
             try:
                 oo = r.json()
