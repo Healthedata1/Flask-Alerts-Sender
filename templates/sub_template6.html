@@ -10,9 +10,15 @@ Click on this <a href=#forward>link</a> or scroll down to initiate the forwardin
 Click "Home" in the menu bar to start over
 </p>
 
+{% if title == "Transaction Bundle Response" %}
+<div>
+    <img alt="Transaction Bundle" class="img-responsive" src="{{url_for('static', filename='images/trans_bundle_post.svg')}}">
+</div>
+{% else %}
 <div>
     <img alt="trigger event" class="img-responsive" src="{{url_for('static', filename='images/response.png')}}">
 </div>
+{% endif %}
 <br/>
 
 {{my_string1 | markdown | safe }}
