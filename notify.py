@@ -19,13 +19,30 @@ import fhirclient.r4models.fhirdate as FD
 import fhirclient.r4models.bundle as B
 from utils import write_out, clear_dir, read_in
 from time import sleep
+from logging.config import dictConfig
+
+dictConfig({
+    'version': 1,
+    'formatters': {'default': {
+        'format': '[%(asctime)s] %(levelname)s in %(module)s %(lineno)d}: %(message)s',
+    }},
+    'handlers': {'wsgi': {
+        'class': 'logging.StreamHandler',
+        'stream': 'ext://flask.logging.wsgi_errors_stream',
+        'formatter': 'default'
+    }},
+    'root': {
+        'level': 'INFO',
+        'handlers': ['wsgi']
+    }
+})
 
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = 'my secret key'
 cache = SimpleCache()
 
 ####### Globals #############
-validate_me = True # to save for validation in IG
+validate_me = False # to save for validation in IG
 
 profile_list = dict(
 Bundle = "http://hl7.org/fhir/us/davinci-alerts/StructureDefinition/notifications-bundle",
@@ -114,13 +131,19 @@ RFC1123_date = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
 ############################
 
 # ************** fetch last bundle from local filesystem **************
-def get_sessionfile(alerts_server):
+def get_sessionfile(alerts_server='Alerts-RI'):
     f_name=session['f_names'][-1]
-    app.logger.info(f'line 627 ***** f_name  list = {session["f_names"]} f_name item =  {session["f_names"][-1]}')
+    app.logger.info(f'last file =  {session["f_names"][-1]}')
     data = read_in(in_path=app.root_path,f_name=f_name) # most recent saved bundle
-    pydata = pyfhir(loads(data))  # convert to fhirclient model
-    pydata.entry[0].resource.destination[0].name = alerts_server
-    pydata.entry[0].resource.destination[0].endpoint = alerts_servers[alerts_server]
+    pydata = pyfhir(loads(data)) # convert to fhirclient model
+    try:
+        pydata.entry[0].resource.destination[0].name = alerts_server
+        pydata.entry[0].resource.destination[0].endpoint = alerts_servers[alerts_server]
+    except AttributeError:
+        for e in pydata.entry:
+            # sub_e = e[0].resource
+            e.resource.entry[0].resource.destination[0].name = alerts_server
+            e.resource.entry[0].resource.destination[0].endpoint = alerts_servers[alerts_server]
     return pydata.as_json()  #convert to dict
 
 #  ************************** add profiles - Does not differentiate between deqm and US-Core for example ************************
@@ -215,8 +238,6 @@ def fetch(Type,_id,ver=None):
             if r.status_code <300:
                 return r.json() # just the first for now
     else:
-
-
         return None
 
 
@@ -308,9 +329,9 @@ def bundler(resources, type, validate_me=False):
                         )
 
         bundle.entry.append(entry)
-    app.logger.info(f'ref_map = {dumps(ref_map, indent = 4)}')
-    app.logger.info(f'meta elements = {[i.resource.meta.profile for i in bundle.entry]}')
-    b_json = dumps(bundle.as_json(), indent=4)
+    #app.logger.info(f'ref_map = {dumps(ref_map, indent = 2)}')
+    #app.logger.info(f'meta elements = {[i.resource.meta.profile for i in bundle.entry]}')
+    b_json = dumps(bundle.as_json(), indent=2)
     # replace old references with new urns
     for old_ref, new_urn in ref_map.items():
         b_json = b_json.replace(old_ref, new_urn)
@@ -462,17 +483,24 @@ def resource_not_valid(type, ver, r_id=None):
                            current_time=datetime.datetime.now(),
                            )
 
-@app.route("/Encounter/<string:r_ids>", defaults={'hx': None,'ver': None } )
-@app.route("/Encounter/<string:r_ids>/<string:hx>/<string:ver>")  # get the encounter and fetch the others and bundle em together!
-def r_id(r_ids, hx, ver):
+@app.route("/Encounter/<string:r_id>", defaults={'hx': None,'ver': None })
+@app.route("/Encounter/<string:r_id>/<string:hx>/<string:ver>")  # get the encounter and fetch the others and bundle em together!
+def r_id(r_id, hx, ver):
     '''
       Fetch encounter
     '''
+
     encounters = []
     session['my_encounters']=[]
-    for r_id in r_ids.split(','):
+    app.logger.info(f'r_id = {r_id}')
+    if r_id == 'batch':
+        r_ids = enc_list[:-3]
+    else:
+        r_ids = [f'{r_id}/{hx}/{ver}']
+    for my_id in r_ids:
+        r_id, hx, ver = my_id.split('/')
         session['my_encounters'].append((r_id,ver))  # save encounter id and ver for this session
-        app.logger.info(f'****** line 449 see what is in session = {session}')
+        app.logger.info(f'****** see what is in session = {session}')
         resource = fetch('Encounter', _id=r_id, ver=ver ) # fetch encounter resource by id as dict
         if resource:
             resource = pyfhir(r_dict=resource) # convert encounter to pyfhir instance
@@ -494,16 +522,16 @@ def r_id(r_ids, hx, ver):
         app.logger.info(f'******resource id={resource.id}***')
         app.logger.info(f'******estimated file size ={str(sys.getsizeof(resource.as_json())/1024)} "KB"***')
 
-    #cache.set('encounters', encounters, timeout=60*15 )
-    '''set cache to use during the session.
-    assuming single user for now to keep it simple
-    keep data for 15 minutes
-    '''
+        #cache.set('encounters', encounters, timeout=60*15 )
+        '''set cache to use during the session.
+        assuming single user for now to keep it simple
+        keep data for 15 minutes
+        '''
     #app.logger.info(f'****** line 454 see what is in cache = {cache.get("encounters")}***')
     return render_template('sub_template4.html',
-           title=f"Encounter: {r_ids}",
-           r_type = 'Encounter',
-           r_id=r_ids,
+            r_id=','.join(r_ids),
+           title= "Encounter",
+           r_type='Encounter',
            r_pyfhir=encounters,
            )
 
@@ -604,15 +632,18 @@ def mb():
         # resources.append(resource)
 
         message_bundles.append(bundler(resources,'message', validate_me)) # returns as json string!
-        session['resource_list'] = [f'{r.resource_type}/{r.id}' for r in resources]
+        session['resource_list'] = session['resource_list']+[f'{r.resource_type}/{r.id}' for r in resources]
+
         ################### End Assemble Bundle ################################
         # endfor loop over encounters,  if encounter length > 1 then create transaction Bundles
+    # writing to ig examples file and running the IG Build:
+    #f_name = f'davinci_notification_bundle_{now.strftime("%Y%m%d%H%M%S.%f")}.json'
+    is_message_bundle = len(message_bundles) < 2
 
-    if len(message_bundles) < 2:
+    if is_message_bundle:
         my_string=f"Getting Resources ready for Da Vinci Notification Message Bundle...for `Encounter/{encounter.id}`"
         app.logger.info(f' type my_string = {type(my_string)}')
         notification_bundle = message_bundles[0]
-        #app.logger.info(f'notification_bundle = {message_bundles[0]}')
         endpoint = '$process-message'
     else:
         '''
@@ -623,25 +654,17 @@ def mb():
         pyfhir_messages = [pyfhir(loads(b)) for b in message_bundles]
         notification_bundle = bundler(pyfhir_messages,'transaction', validate_me)
         my_string=f'Getting Resources ready for Tansaction Bundle of Da Vinci Notification Message Bundle...\n'\
-        f'for {",".join([r for r in resource_list if r.startswith("Encounter")])}'
+        f'for {",".join([r for r in session["resource_list"] if r.startswith("Encounter")])}'
         endpoint = 'transaction'
 
-    # writing to ig examples file and running the IG Build:
-    #f_name = f'davinci_notification_bundle_{now.strftime("%Y%m%d%H%M%S.%f")}.json'
     b_id = loads(notification_bundle)["id"]
     f_name = f'davinci-notification-bundle-{b_id}.json'
     write_out(app.root_path, f_name, notification_bundle)
     app.logger.info(f'writing example notification bundle to {app.root_path}/test_output/{f_name}')
     session['f_names'].append(f_name) # keep track of f_names for session to delete later
     session.modified = True
-    app.logger.info(f'****** line 587 see what is in session = {session}***')
-    #cache.set('f_name', f_name, timeout=60*60) # to delete upload files when start over
-    '''set cache to use during the session.
-    assuming single user for now to keep it simple
-    keep data for 15 minutes
-    '''
-    #app.logger.info(f'****** line 574 see what is in cache = {cache.get(f_name)}***')
-
+    app.logger.info(f'****** see what is in session = {session}***')
+    #app.logger.info(f'notification_bundle = {message_bundles[0]}')
     #cache.set('notification_bundle', notification_bundle, timeout=60*15 )
     #app.logger.info(f'****** line 574 see what is in cache = {cache.get("notification_bundle")}***')
     return render_template('sub_template5.html',
@@ -650,7 +673,7 @@ def mb():
            endpoint_urls = alerts_servers,
            endpoint = endpoint,
            notification_bundle = notification_bundle,
-           b_id=b_id,
+           b_id = loads(notification_bundle)["id"],
            )
 
 @app.route("/ForwardBundle", methods=["POST"])
@@ -736,14 +759,14 @@ def fwd():
                 session['resource_list'].pop(payor_index)
 
     # writing to ig examples file and running the IG Build:
-    notification_bundle = dumps(b.as_json(), indent=4)
+    notification_bundle = dumps(b.as_json(), indent=2)
     #app.logger.info(f'notification_bundle = {message_bundles[0]}')
     f_name = f'davinci-notification-bundle-{b.id}.json'
     write_out(app.root_path, f_name, notification_bundle)
     app.logger.info(f'writing example notification bundle to {app.root_path}/test_output/{f_name}')
     session['f_names'].append(f_name) # keep track of f_names for session to delete later
     session.modified = True
-    app.logger.info(f'****** line 587 see what is in session = {session}***')
+    app.logger.info(f'****** see what is in session = {session}***')
 
     return render_template('sub_template5.html',
            title="Forwarding Notification Bundle Prep",
@@ -813,7 +836,7 @@ def process_message(alerts_server):
         'Authorization':'Bearer heqfnVgiMGCJuef',  #if alerts_server == "One Medical" else None,
         }
         app.logger.info(f'*******alerts_server = {alerts_server}******')
-        app.logger.info(f'****** line 624 see what is in session = {session}')
+        app.logger.info(f'****** see what is in session = {session}')
         data = get_sessionfile(alerts_server)
         app.logger.info(f'data = {data}')
         #with post(f'{alerts_servers[alerts_server]}/$process-message', headers=headers, data=data) as r:
@@ -848,8 +871,9 @@ def transaction(alerts_server):
         }
 
         #data = cache.get('notification_bundle')
-        app.logger.info(f'*******alert_server = {alert_server}******')
-        app.logger.info(f'*******alert_server $process-message url = {alerts_servers[alerts_server]}******')
+        app.logger.info(f'*******alerts_server = {alerts_server}******')
+        app.logger.info(f'*******alerts_server $process-message url = {alerts_servers[alerts_server]}******')
+        data = get_sessionfile(alerts_server)
         app.logger.info(f'data = {data}')
         with post(f'{alerts_servers[alerts_server]}/', headers=headers, data=data) as r:
             try:

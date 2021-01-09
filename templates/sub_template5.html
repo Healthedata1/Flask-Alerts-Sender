@@ -1,6 +1,7 @@
 {% extends "template.html" %}
 
 {% block content %}
+
   <h3> Instructions and Documentation </h3>
 
   <p> See below for the collection of resources bundled together to create the
@@ -13,6 +14,10 @@
 {% if forwarding %}
 <div>
     <img alt="Forwarding Message" class="img-responsive" src="{{url_for('static', filename='images/forward.png')}}">
+</div>
+{% elif endpoint=="transaction" %}
+<div>
+    <img alt="Transaction Bundle" class="img-responsive" src="{{url_for('static', filename='images/trans_bundle.svg')}}">
 </div>
 {% else %}
 <div>
@@ -32,15 +37,25 @@
 {% endfor %}
 
 <h4>Getting Bundle ready for {% if forwarding %}forwarding{% else %}sending{% endif %} the Da Vinci Notification Message Bundle for Encounter id={{ session.my_encounters[-1][0] }} ver={{ session.my_encounters[-1][1] }}</h4>
-<!-- TODO fix the list to match the output...need updated ids -->
 list of resources in Bundle:
-<ul>
+
+<ol>
 {% for i in session.resource_list %}
+{% if i.startswith("MessageHeader") %}
+<li>
+<strong>{{i}}</strong>
+<ul>
+{% else %}
 <li>
 {{i}}
 </li>
-{% endfor %}
+{% endif %}
+{% if i.startswith("MessageHeader") %}
 </ul>
+</li>
+{% endif %}
+{% endfor %}
+</ol>
 
 <h4>Notification Bundle Resource: id = {{b_id}}</h4>
 <a class="btn btn-default btn-lg" role="button" href="../uploads/{{ session.f_names[-1] }}">Download</a>

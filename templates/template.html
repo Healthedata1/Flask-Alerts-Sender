@@ -21,7 +21,7 @@ For single "real-time" Notifications:
      - Forwards a new Message with **no changes** to the content to the nominated endpoint using the `$process-message` operation
      - or Forwards a new changed Message with **changes** to the content (removal of Coverage reosource and the Organization resource it references) to the nominated endpoint using the `$process-message` operation
 
-<!--
+
 For a Batch Transaction of multiple Notification:
 
   1. Fetches all the relevant *Admit* and *Discharge* Encounters from the **{ref_server}** Reference Server
@@ -34,7 +34,7 @@ For a Batch Transaction of multiple Notification:
   <div>
     <img alt="trigger event" class="img-responsive" src="{{url_for('static', filename='images/trigger.png')}}">
   </div>
--->
+
 
 <hr/>
 
@@ -53,12 +53,12 @@ For a Batch Transaction of multiple Notification:
     {% endfor %}
 
   <br>
-<!--
+
   <hr/>
 {{ '**For *Batch Notifications* Click on button below to fetch all the admit, transfer, and discharge Encounter resources**'  | markdown | safe}}
 
-    <a class="btn btn-primary" role="button" href="Encounter/{{ enc_list[:-1]|join(',') }}">Batch Encounters</a>
+    <a class="btn btn-primary" role="button" href="Encounter/batch">Batch Encounters</a>
 
   <hr/>
--->
+
 {% endblock %}

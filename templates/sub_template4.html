@@ -1,10 +1,11 @@
 {% extends "template.html" %}
 
 {% block content %}
+
   <h3> Instructions and Documentation </h3>
 
   <p>
-    See the details of the Encounter below. The Sender asssembles the Message Bundle as defined in the a Vinci Unsolicited Notifications Implementation Guide.
+    See the details of the Encounter(s) below. The Sender asssembles the Message Bundle as defined in the a Vinci Unsolicited Notifications Implementation Guide.
   </p>
 
   <div>
@@ -29,12 +30,12 @@
 <hr/>
 {% for i in r_id.split(",") %}
 {% if r_id.split(",") | length > 1%}
-  <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample{{i}}" aria-expanded="false" aria-controls="collapseExample{{i}}">
+  <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample{{i.replace('/','-')}}" aria-expanded="false" aria-controls="collapseExample{{i}}">
     Click Here to See the Encounter Resource {{i}} Details
   </button>
   <br/>
   <br/>
-  <div class="collapse" id="collapseExample{{i}}">
+  <div class="collapse" id="collapseExample{{i.replace('/','-')}}">
 
 {% endif %}
 
@@ -90,7 +91,7 @@
       {{ r_pyfhir[loop.index0].as_json() | tojson(indent=4) }}
       </pre>
 
-  {% if r_id.split(",") | length > 1%}
+  {% if r_id.split(",") | length > 1 %}
       </div>
   {% endif %}
   {% endfor %}
