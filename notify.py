@@ -4,33 +4,42 @@ simple flask app to fetch data build a bundle and send as $process-message opera
 use ps aux | grep Flask to find app and kill
 '''
 
-from flask import Flask, render_template, redirect, url_for, session, send_from_directory, request, Response
-from werkzeug.contrib.cache import SimpleCache
-import sys, datetime, uuid
-from json import load, dumps, loads
-from requests import get, post, put
-from commonmark import commonmark
-import fhirtemplates # local templates
-from importlib import import_module
-from pathlib import Path
-from copy import deepcopy
-import fhirclient.r4models.meta as M
-import fhirclient.r4models.fhirdate as FD
-import fhirclient.r4models.bundle as B
-from utils import write_out, clear_dir, read_in
-from time import sleep
+import datetime
 import logging
+import sys
+import uuid
+from copy import deepcopy
+from importlib import import_module
+from json import dumps, load, loads
+from pathlib import Path
+from time import sleep
+
+import fhirclient.r4models.bundle as B
+import fhirclient.r4models.fhirdate as FD
+import fhirclient.r4models.meta as M
+from commonmark import commonmark
+from flask import (Flask, Response, redirect, render_template, request,
+                   send_from_directory, session, url_for)
+from requests import get, post, put
+from flask_caching import Cache
+
+import fhirtemplates  # local templates
+from utils import clear_dir, read_in, write_out
 
 logging.basicConfig(
         level=logging.DEBUG,
         #filename='/Users/ehaas/Documents/Python/Flask-PL/demo.log',
         format='[%(asctime)s] %(levelname)s in %(module)s %(lineno)d}: %(message)s',
         )
-
+cache = Cache(config={'CACHE_TYPE': 'filesystem', 'CACHE_DIR': '/tmp'})
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = 'my secret key'
+cache.init_app(app)
 
+with app.app_context():
+        cache.clear()
 ####### Globals #############
+
 validate_me = False # to save for validation in IG
 
 profile_list = dict(
@@ -480,17 +489,32 @@ def r_id(r_id, hx, ver):
     '''
 
     encounters = []
+    #app.logger.info(f"cache.get('batch') = {cache.get('batch')}") 
     session['my_encounters']=[]
     app.logger.info(f'r_id = {r_id}')
     if r_id == 'batch':
         r_ids = enc_list[:-3]
+        
+        try:
+            encounters = encounters + cache.get("batch")
+        except TypeError:
+            pass 
+        else:
+            session['my_encounters']=[(e.split('/')[0],e.split('/')[2]) for e in r_ids]
+            return render_template('sub_template4.html',
+                r_id=','.join(r_ids),
+            title= "Encounter",
+            r_type='Encounter',
+            r_pyfhir=encounters,
+                    )
+
     else:
         r_ids = [f'{r_id}/{hx}/{ver}']
     for my_id in r_ids:
-        r_id, hx, ver = my_id.split('/')
-        session['my_encounters'].append((r_id,ver))  # save encounter id and ver for this session
+        my_uid, hx, ver = my_id.split('/')
+        session['my_encounters'].append((my_uid,ver))  # save encounter id and ver for this session
         app.logger.info(f'****** see what is in session = {session}')
-        resource = fetch('Encounter', _id=r_id, ver=ver ) # fetch encounter resource by id as dict
+        resource = fetch('Encounter', _id=my_uid, ver=ver ) # fetch encounter resource by id as dict
         if resource:
             resource = pyfhir(r_dict=resource) # convert encounter to pyfhir instance
             add_profile(resource) # add profile if not already there
@@ -498,31 +522,27 @@ def r_id(r_id, hx, ver):
             try:
                 r_status = resource.status
             except:
-                return redirect(url_for('resource_not_valid', type='Encounter', r_id=f'{r_id}#status'))
+                return redirect(url_for('resource_not_valid', type='Encounter', my_uid=f'{my_uid}#status'))
             try:
                 r_class = resource.class_fhir
             except:
-                return redirect(url_for('resource_not_valid', type='Encounter', r_id=f'{r_id}#class'))
+                return redirect(url_for('resource_not_valid', type='Encounter', my_uid=f'{my_uid}#class'))
             encounters.append(resource)
 
         else:
-            return redirect(url_for('resource_not_found', type='Encounter', r_id=r_id))
+            return redirect(url_for('resource_not_found', type='Encounter', my_uid=my_uid))
 
         app.logger.info(f'******resource id={resource.id}***')
         app.logger.info(f'******estimated file size ={str(sys.getsizeof(resource.as_json())/1024)} "KB"***')
 
-        #cache.set('encounters', encounters, timeout=60*15 )
-        '''set cache to use during the session.
-        assuming single user for now to keep it simple
-        keep data for 15 minutes
-        '''
-    #app.logger.info(f'****** line 454 see what is in cache = {cache.get("encounters")}***')
+        if r_id == 'batch':
+            cache.set('batch', encounters, )
+    #app.logger.info(f"cache.get('batch' )= {cache.get('batch')}") 
     return render_template('sub_template4.html',
             r_id=','.join(r_ids),
            title= "Encounter",
            r_type='Encounter',
-           r_pyfhir=encounters,
-           )
+           r_pyfhir=encounters,           )
 
 @app.route("/MessageBundle", methods=["POST", "GET"])
 def mb():
@@ -533,6 +553,7 @@ def mb():
     create bundle
     '''
 
+
     ################### Assemble Bundle ################################
     app.logger.info(f'****** line 492 see what is in session = {session}***')
     #app.logger.info(f'****** line 465 see what is in cache = {cache.get("encounters")}***')
@@ -541,129 +562,146 @@ def mb():
     session['resource_list'] = []
     message_bundles =[]
     now = datetime.datetime.utcnow()
-
+    is_message_bundle = len(session['my_encounters']) < 2
+    cache_notif_bundle = cache.get("notification_bundle")
     ################
-    #for loop over encounters,  if encounter length > 1 then create transaction Bundles
-    #################
-    for r_id, ver in session['my_encounters']:  #encounters:
-        encounter =fetch('Encounter', _id=r_id, ver=ver) #as dict
-        encounter = pyfhir(r_dict=encounter) # convert encounter to pyfhir instance
-        add_profile(encounter) # add profile if not already there
-        resources = [encounter]
-        # create messageheader
-        mh = getattr(fhirtemplates,'messageheader') # resources as dict
-        mh = pyfhir(mh) #convert to fhirclient
-        mh.id = str(uuid.uuid1())
-        mh.focus[0].reference = f"Encounter/{encounter.id}"
+    #for loop over encounters  if encounter length >1 then create transaction bundle
+    
+    if not is_message_bundle and cache_notif_bundle: #if cached use it instead
+        for b in loads(cache_notif_bundle)["entry"]:
+             session['resource_list'].append(f'{b["resource"]["resourceType"]}/{b["resource"]["id"]}')
+             for r in b["resource"]["entry"]:
+                 session['resource_list'].append(f'{r["resource"]["resourceType"]}/{r["resource"]["id"]}')
 
-        if encounter.status == "in-progress" and encounter.class_fhir.code == "EMER":
-            mh.eventCoding.code = 'notification-admit'
-            mh.eventCoding.display = 'Notification Admit'
-        elif encounter.status == "in-progress" and encounter.class_fhir.code == "IMP":
-            mh.eventCoding.code =  'notification-transfer'
-            mh.eventCoding.display = 'Notification Transfer'
-            mh.meta.profile[1] = profile_list['MessageHeader_transfer']
-        elif encounter.status == "finished":
-            mh.eventCoding.code =  'notification-discharge'
-            mh.eventCoding.display = 'Notification Discharge'
-            mh.meta.profile[1] = profile_list['MessageHeader_discharge']
-
-
-        # TODO add discharge subtypes and handle other statuses
-        mh.focus[0].display = f'{mh.eventCoding.display}({encounter.type[0].text})'
-
-        # mh.destination[0].name = list(alerts_servers.keys())[0]
-        # mh.destination[0].endpoint = list(alerts_servers.values())[0]
-        # TODO make a selection for the destination
-
-        mh.sender.reference = encounter.serviceProvider.reference
-        mh.sender.display = encounter.serviceProvider.display
-
-        mh.author.reference = encounter.participant[0].individual.reference
-        mh.author.display = encounter.participant[0].individual.display
-
-        mh.responsible.reference = encounter.serviceProvider.reference
-        mh.responsible.display = encounter.serviceProvider.display
-
-        resources.insert(0, mh)
-
-        for i in get_ids:  # [{Type:Type, args=(args)}]
-            Type = i['Type']
-            args = i['args']
-            is_req = i['is_req']
-            my_id = get_r_id(encounter,*args)
-            app.logger.info(f'******my_id = {my_id}')
-            resource = fetch(Type, _id=my_id, ver=None)
-            append_resource(resource, resources, Type=Type, id=my_id, is_req = is_req)
-
-        resource = search('Condition',
-                         patient=get_r_id(encounter,'subject','reference'), encounter=encounter.id,
-                         ) # fetch condition
-        append_resource(resource, resources, Type='Condition')
-
-        resource = search('Coverage',
-                         patient=get_r_id(encounter,'subject','reference'),
-                          ) # fetch coverage
-        coverage = pyfhir(r_dict=resource)
-        append_resource(resource, resources, Type='Coverage')
-
-        if coverage:
-            my_id = get_r_id(coverage,'payor','reference')
-            resource = fetch('Organization',
-                            _id=my_id,
-                         ) # fetch coverage
-            append_resource(resource, resources, Type='Organization', id=my_id)
-
-        # assume sender = author i.e. no separate sender initially save for intermediary
-        # sender = getattr(fhirtemplates,'sender') # hardcode org for now
-        # resource = pyfhir(sender) #convert to fhirclient model
-        # add_profile(resource)
-        # resources.append(resource)
-
-        message_bundles.append(bundler(resources,'message', validate_me)) # returns as json string!
-        session['resource_list'] = session['resource_list']+[f'{r.resource_type}/{r.id}' for r in resources]
-
-        ################### End Assemble Bundle ################################
-        # endfor loop over encounters,  if encounter length > 1 then create transaction Bundles
-    # writing to ig examples file and running the IG Build:
-    #f_name = f'davinci_notification_bundle_{now.strftime("%Y%m%d%H%M%S.%f")}.json'
-    is_message_bundle = len(message_bundles) < 2
-
-    if is_message_bundle:
-        my_string=f"Getting Resources ready for Da Vinci Notification Message Bundle...for `Encounter/{encounter.id}`"
-        app.logger.info(f' type my_string = {type(my_string)}')
-        notification_bundle = message_bundles[0]
-        endpoint = '$process-message'
-    else:
-        '''
-        if message_bundles length > 2 then bundle as transaction.
-        loop through message bundles and convert back to pyfhir object and save to array
-        then bundle again in a transaction and get a transaction as json string back. (modify the function to do this too)
-        '''
-        pyfhir_messages = [pyfhir(loads(b)) for b in message_bundles]
-        notification_bundle = bundler(pyfhir_messages,'transaction', validate_me)
-        my_string=f'Getting Resources ready for Tansaction Bundle of Da Vinci Notification Message Bundle...\n'\
-        f'for {",".join([r for r in session["resource_list"] if r.startswith("Encounter")])}'
-        endpoint = 'transaction'
-
-    b_id = loads(notification_bundle)["id"]
-    f_name = f'davinci-notification-bundle-{b_id}.json'
-    write_out(app.root_path, f_name, notification_bundle)
-    app.logger.info(f'writing example notification bundle to {app.root_path}/test_output/{f_name}')
-    session['f_names'].append(f_name) # keep track of f_names for session to delete later
-    session.modified = True
-    app.logger.info(f'****** see what is in session = {session}***')
-    #app.logger.info(f'notification_bundle = {message_bundles[0]}')
-    #cache.set('notification_bundle', notification_bundle, timeout=60*15 )
-    #app.logger.info(f'****** line 574 see what is in cache = {cache.get("notification_bundle")}***')
-    return render_template('sub_template5.html',
-           my_string=my_string,
+        return render_template('sub_template5.html',
+           my_string='Getting Resources ready for Tansaction Bundle of Da Vinci Notification Message Bundle...',
            title="Notification Bundle Prep",
            endpoint_urls = alerts_servers,
-           endpoint = endpoint,
-           notification_bundle = notification_bundle,
-           b_id = loads(notification_bundle)["id"],
+           endpoint = 'transaction',
+           notification_bundle = cache_notif_bundle,
+           b_id = loads(cache_notif_bundle)["id"],
            )
+        
+    else:
+        #################
+        for r_id, ver in session['my_encounters']:  #encounters:
+            encounter =fetch('Encounter', _id=r_id, ver=ver) #as dict
+            encounter = pyfhir(r_dict=encounter) # convert encounter to pyfhir instance
+            add_profile(encounter) # add profile if not already there
+            resources = [encounter]
+            # create messageheader
+            mh = getattr(fhirtemplates,'messageheader') # resources as dict
+            mh = pyfhir(mh) #convert to fhirclient
+            mh.id = str(uuid.uuid1())
+            mh.focus[0].reference = f"Encounter/{encounter.id}"
+
+            if encounter.status == "in-progress" and encounter.class_fhir.code == "EMER":
+                mh.eventCoding.code = 'notification-admit'
+                mh.eventCoding.display = 'Notification Admit'
+            elif encounter.status == "in-progress" and encounter.class_fhir.code == "IMP":
+                mh.eventCoding.code =  'notification-transfer'
+                mh.eventCoding.display = 'Notification Transfer'
+                mh.meta.profile[1] = profile_list['MessageHeader_transfer']
+            elif encounter.status == "finished":
+                mh.eventCoding.code =  'notification-discharge'
+                mh.eventCoding.display = 'Notification Discharge'
+                mh.meta.profile[1] = profile_list['MessageHeader_discharge']
+
+
+            # TODO add discharge subtypes and handle other statuses
+            mh.focus[0].display = f'{mh.eventCoding.display}({encounter.type[0].text})'
+
+            # mh.destination[0].name = list(alerts_servers.keys())[0]
+            # mh.destination[0].endpoint = list(alerts_servers.values())[0]
+            # TODO make a selection for the destination
+
+            mh.sender.reference = encounter.serviceProvider.reference
+            mh.sender.display = encounter.serviceProvider.display
+
+            mh.author.reference = encounter.participant[0].individual.reference
+            mh.author.display = encounter.participant[0].individual.display
+
+            mh.responsible.reference = encounter.serviceProvider.reference
+            mh.responsible.display = encounter.serviceProvider.display
+
+            resources.insert(0, mh)
+
+            for i in get_ids:  # [{Type:Type, args=(args)}]
+                Type = i['Type']
+                args = i['args']
+                is_req = i['is_req']
+                my_id = get_r_id(encounter,*args)
+                app.logger.info(f'******my_id = {my_id}')
+                resource = fetch(Type, _id=my_id, ver=None)
+                append_resource(resource, resources, Type=Type, id=my_id, is_req = is_req)
+
+            resource = search('Condition',
+                            patient=get_r_id(encounter,'subject','reference'), encounter=encounter.id,
+                            ) # fetch condition
+            append_resource(resource, resources, Type='Condition')
+
+            resource = search('Coverage',
+                            patient=get_r_id(encounter,'subject','reference'),
+                            ) # fetch coverage
+            coverage = pyfhir(r_dict=resource)
+            append_resource(resource, resources, Type='Coverage')
+
+            if coverage:
+                my_id = get_r_id(coverage,'payor','reference')
+                resource = fetch('Organization',
+                                _id=my_id,
+                            ) # fetch coverage
+                append_resource(resource, resources, Type='Organization', id=my_id)
+
+            # assume sender = author i.e. no separate sender initially save for intermediary
+            # sender = getattr(fhirtemplates,'sender') # hardcode org for now
+            # resource = pyfhir(sender) #convert to fhirclient model
+            # add_profile(resource)
+            # resources.append(resource)
+
+            message_bundles.append(bundler(resources,'message', validate_me)) # returns as json string!
+            session['resource_list'] = session['resource_list']+[f'{r.resource_type}/{r.id}' for r in resources]
+
+            ################### End Assemble Bundle ################################
+            # endfor loop over encounters,  if encounter length > 1 then create transaction Bundles
+        # writing to ig examples file and running the IG Build:
+        #f_name = f'davinci_notification_bundle_{now.strftime("%Y%m%d%H%M%S.%f")}.json'
+
+        if is_message_bundle:
+            my_string="Getting Resources ready for Da Vinci Notification Message Bundle..."
+            app.logger.info(f' type my_string = {type(my_string)}')
+            notification_bundle = message_bundles[0]
+            endpoint = '$process-message'
+        else:
+            '''
+            if message_bundles length > 2 then bundle as transaction.
+            loop through message bundles and convert back to pyfhir object and save to array
+            then bundle again in a transaction and get a transaction as json string back. (modify the function to do this too)
+            '''
+            pyfhir_messages = [pyfhir(loads(b)) for b in message_bundles]
+            notification_bundle = bundler(pyfhir_messages,'transaction', validate_me)
+            my_string='Getting Resources ready for Tansaction Bundle of Da Vinci Notification Message Bundle...'
+            endpoint = 'transaction'
+            cache.set('notification_bundle', notification_bundle)
+
+        b_id = loads(notification_bundle)["id"]
+        f_name = f'davinci-notification-bundle-{b_id}.json'
+        write_out(app.root_path, f_name, notification_bundle)
+        app.logger.info(f'writing example notification bundle to {app.root_path}/test_output/{f_name}')
+        session['f_names'].append(f_name) # keep track of f_names for session to delete later
+        session.modified = True
+        app.logger.info(f'****** see what is in session = {session}***')
+        #app.logger.info(f'notification_bundle = {message_bundles[0]}')
+        #cache.set('notification_bundle', notification_bundle, timeout=60*15 )
+        #app.logger.info(f'****** line 574 see what is in cache = {cache.get("notification_bundle")}***')
+        return render_template('sub_template5.html',
+            my_string=my_string,
+            title="Notification Bundle Prep",
+            endpoint_urls = alerts_servers,
+            endpoint = endpoint,
+            notification_bundle = notification_bundle,
+            b_id = loads(notification_bundle)["id"],
+            )
 
 @app.route("/ForwardBundle", methods=["POST"])
 def fwd():

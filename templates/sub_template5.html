@@ -30,30 +30,22 @@
   {% for k,v in endpoint_urls.items() %}
   {% set image = 'images/' + k + '.png' %}
   <img alt="{{k}}" class="img-responsive" width="150" src="{{url_for('static', filename=image)}}">
-  <a class="btn btn-primary btn-lg" role="button" href="../{{k}}/{{endpoint}}">CLICK HERE to send message bundle the {{k}} ({{v}}) {{endpoint}} endpoint</a>
+  <a class="btn btn-primary btn-lg" role="button" href="../{{k}}/{{endpoint}}">CLICK HERE to send {{endpoint}} bundle the {{k}} ({{v}}) {{endpoint}} endpoint</a>
   <br/>
   <br/>
 
 {% endfor %}
 
-<h4>Getting Bundle ready for {% if forwarding %}forwarding{% else %}sending{% endif %} the Da Vinci Notification Message Bundle for Encounter id={{ session.my_encounters[-1][0] }} ver={{ session.my_encounters[-1][1] }}</h4>
-list of resources in Bundle:
+<h4>Getting Bundle ready for {% if forwarding %}forwarding{% else %}sending{% endif %} the Da Vinci Notification Bundle</h4>
+list of resources in {{endpoint}} Bundle:
 
 <ol>
 {% for i in session.resource_list %}
-{% if i.startswith("MessageHeader") %}
 <li>
-<strong>{{i}}</strong>
-<ul>
-{% else %}
-<li>
-{{i}}
-</li>
+{% if i.split('/')[0] in ["MessageHeader", "Bundle"]  %}<strong>{{i}}</strong>
+{% else %}{{i}}
 {% endif %}
-{% if i.startswith("MessageHeader") %}
-</ul>
 </li>
-{% endif %}
 {% endfor %}
 </ol>
 
