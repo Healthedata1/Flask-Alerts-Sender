@@ -15,6 +15,11 @@
 
 <a class="btn btn-primary btn-lg" role="button" href="/MessageBundle">CLICK HERE to Assemble the Da Vinci Notification Bundle</a>
  <br/>
+{% if batch %}
+ {{ '*Note that it will take a minute or two to retrieve the 81 resources from the FHIR Server and assemble the Transaction Bundle
+ ...So Be Patient...*' | markdown | safe }}
+
+{% endif %}
 <!--
 <form action="/MessageBundle" method="post" name="get-bundle">
 <input type="submit" class="btn btn-primary btn-lg" role="button" value="CLICK HERE to Assemble the Da Vinci Notification Bundle"></input>

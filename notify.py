@@ -7,12 +7,12 @@ use ps aux | grep Flask to find app and kill
 from flask import Flask, render_template, redirect, url_for, session, send_from_directory, request, Response
 from werkzeug.contrib.cache import SimpleCache
 import sys, datetime, uuid
-from json import load, dumps, loads
-from requests import get, post, put
 from commonmark import commonmark
+from json import dumps, load, loads
+from requests import get, post, put
+from pathlib import Path
 import fhirtemplates # local templates
 from importlib import import_module
-from pathlib import Path
 from copy import deepcopy
 import fhirclient.r4models.meta as M
 import fhirclient.r4models.fhirdate as FD
@@ -52,19 +52,19 @@ Provenance = "http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance
 
 #enc_list = [i for i in range(905,911)] +['foo']# test R4 Server encounters
 #enc_list = [588258,588265,588267,588274,588276,588283]+['foo']# test HAPI R4 Server encounters
-enc_list = [ #for 54 = admit, 55 = transfer =, 56 = discharge
- '5fe62cd5-bfcf-4d3b-a1e9-80d6f75d6f82/_history/54',
- '5fe62cd5-bfcf-4d3b-a1e9-80d6f75d6f82/_history/55',
- '5fe62cd5-bfcf-4d3b-a1e9-80d6f75d6f82/_history/56',
- '542f9e32-4309-4277-81ce-12419f0d1294/_history/54',
- '542f9e32-4309-4277-81ce-12419f0d1294/_history/55',
- '542f9e32-4309-4277-81ce-12419f0d1294/_history/56',
- '02ba9ec6-0712-4715-8ba4-5485fc571403/_history/54',
- '02ba9ec6-0712-4715-8ba4-5485fc571403/_history/55',
- '02ba9ec6-0712-4715-8ba4-5485fc571403/_history/56',
- 'foo/_history/54',
- 'foo/_history/55',
- 'foo/_history/56']
+enc_list = [ #for 64 = admit, 65 = transfer =, 66 = discharge
+ '5fe62cd5-bfcf-4d3b-a1e9-80d6f75d6f82/_history/64',
+ '5fe62cd5-bfcf-4d3b-a1e9-80d6f75d6f82/_history/66',
+ '5fe62cd5-bfcf-4d3b-a1e9-80d6f75d6f82/_history/67',
+ '542f9e32-4309-4277-81ce-12419f0d1294/_history/65',
+ '542f9e32-4309-4277-81ce-12419f0d1294/_history/67',
+ '542f9e32-4309-4277-81ce-12419f0d1294/_history/68',
+ '02ba9ec6-0712-4715-8ba4-5485fc571403/_history/64',
+ '02ba9ec6-0712-4715-8ba4-5485fc571403/_history/66',
+ '02ba9ec6-0712-4715-8ba4-5485fc571403/_history/67',
+ 'foo/_history/1',
+ 'foo/_history/2',
+ 'foo/_history/3']
 
 
 get_ids = [# [{name:name, Type:Type, args=(args), is_req=bool}]
@@ -478,11 +478,12 @@ def r_id(r_id, hx, ver):
     '''
       Fetch encounter
     '''
-
+    batch = False
     encounters = []
     session['my_encounters']=[]
     app.logger.info(f'r_id = {r_id}')
     if r_id == 'batch':
+        batch = True
         r_ids = enc_list[:-3]
     else:
         r_ids = [f'{r_id}/{hx}/{ver}']
@@ -522,6 +523,7 @@ def r_id(r_id, hx, ver):
            title= "Encounter",
            r_type='Encounter',
            r_pyfhir=encounters,
+           batch = batch,
            )
 
 @app.route("/MessageBundle", methods=["POST", "GET"])
