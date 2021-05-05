@@ -17,11 +17,3 @@ urllib3==1.25.7
 uuid==1.30
 Werkzeug==0.16.0
 zope.interface==4.7.1
-
-
-/home/ehaas/.virtualenvs/myvirtualenv
-
-For example, if your app lives at /home/myusername/myproject/myapp.py, and in there, the WSGI app is a variable called app, you'll want:
-
-sys.path.append('/home/mysusername/myproject')
-from myapp import app as application
